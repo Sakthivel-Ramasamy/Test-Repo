@@ -10,6 +10,8 @@ for element in result:
 print()
 print(ipaddr)
 
+is it working???
+
 #print()
 #print(result.summary())
 #print("Number of hosts = {}/254".format(len(result)))
