@@ -10,7 +10,7 @@ for element in result:
 print()
 print(ipaddr)
 
-is it working???
+
 
 trial2
 
