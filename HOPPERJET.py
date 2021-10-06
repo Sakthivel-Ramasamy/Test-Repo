@@ -116,7 +116,7 @@ def promiscuousdevicescannerusingscapy():
 
 #Start of ARP Spoofing Detection Scanner
 
-arpcount=0
+#arpcount=0
 
 def danger(a):
     print(colored(("\nYou are under attack REAL-MAC: "+str(a[0])+" FACE MAC:"+str(a[1])), "white", "on_red", attrs=['bold']))
@@ -134,7 +134,7 @@ def get_macarp(ip):
     return result[0][1].hwsrc
 
 #process for every packet received by sniff function 
-def process(packet): 
+def arpspoofdetectprocess(packet): 
     #print("process")
     # if the packet is an ARP packet 
     global arpcount
@@ -163,10 +163,46 @@ def process(packet):
             # may be a fake IP or firewall is blocking packets 
             pass
 
-def arpcheck(interface):
-    sniff(store=False,prn=process,iface=interface)
+def arpspoofcheck(interface):
+    sniff(store=False,prn=arpspoofdetectprocess,iface=interface)
 
 #End of ARP Spoofing Detection Scanner
+
+#Start of IP Spoofing Detection Scanner
+
+#ttl_values = {}
+# Threshold for maximum difference in TTL values
+#threshold=int(input("\nEnter the Threshold Value: "))
+
+# Parses packets received and passes source IP 
+def get_ttl(pkt):
+	try:
+		if pkt.haslayer(IP):
+			src = pkt.getlayer(IP).src
+			ttl = pkt.getlayer(IP).ttl
+			check_ttl(src, ttl)
+	except:
+		pass
+
+# Checks if the TTL is within the maximum threshold
+def check_ttl(src, ttl):
+    global ttl_values
+    global threshold
+    if not src in ttl_values:
+		    icmp_pkt = sr1(IP(dst=src)/ICMP(), retry=0, verbose=0, timeout=1)
+		    ttl_values[src] = icmp_pkt.ttl
+    if abs(int(ttl_values[src]) - int(ttl)) > threshold:
+        print(f"[!] Detected possible spoofed packet from [{src}]")
+        print(f"[!] Received TTL: {ttl}, Actual TTL: {ttl_values[src]}")
+
+# Sniffs traffic on the specified interface. 
+# Grabs the src IP and TTL from the network traffic then compares the TTL with an ICMP echo reply. 
+# If the difference in TTL is greater than THRESHOLD a warning will be printed.
+def ipspoofcheck(interface):
+	print(f"\n[*] Sniffing traffic on interface [{interface}]")
+	sniff(prn=get_ttl, iface=interface, store=False)
+
+#End of IP Spoofing Detection Scanner
 
 def exitprocess():
     sys.exit()
@@ -203,7 +239,7 @@ if __name__=="__main__":
 
     #End of Banner
 
-    print("\nEnter 1 for Host Discovery\n      2 for Promiscuous Mode Detection\n      3 for ARP Spoofing Detection\n")
+    print("\nEnter 1 for Host Discovery\n      2 for Promiscuous Mode Detection\n      3 for ARP Spoofing Detection\n      4 for IP Spoof Detection\n")
     print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
     print(colored("menu", "blue", attrs=['bold']), end="")
     print(colored(") >", "green", attrs=['bold']), end=" ")
@@ -242,8 +278,22 @@ if __name__=="__main__":
             elif(choice==2):
                 promiscuousdevicescannerusingscapy()
     elif(featureselection==3):
-        inter=input("\nEnter the Interface of the Host: ")
-        arpcheck(inter)
+        interface=input("\nEnter the Interface of the Host (Default: eth0): ")
+        if len(interface)==0:
+            interface='eth0'
+        arpcount=0
+        arpspoofcheck(interface)
+    elif(featureselection==4):
+        interface=input("\nEnter the Interface of the Host (Default: eth0): ")
+        if len(interface)==0:
+            interface='eth0'
+        ttl_values={}
+        try:
+            threshold=int(input("\nEnter the Threshold Value (Default: 5): "))
+        except ValueError:
+            threshold=5
+        print("\nWarning: This may slow down your system and it may not respond as expected...")
+        ipspoofcheck(interface)
     exitprocess()
 
 #End of main Function
