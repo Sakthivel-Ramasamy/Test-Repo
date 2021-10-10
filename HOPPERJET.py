@@ -1,3 +1,4 @@
+import datetime
 from getmac import get_mac_address
 import nmap
 import os
@@ -204,6 +205,53 @@ def ipspoofcheck(interface):
 
 #End of IP Spoofing Detection Scanner
 
+#Start of DNS Spoofing Detection Scanner
+
+def dnsDetect(packet):
+    if DNS in packet and packet[DNS].qr == 1 and packet[DNS].ancount >= 1:
+        global dnsMap
+        if packet[DNS].id not in dnsMap:
+            dnsMap[packet[DNS].id]=packet
+            #print('Packet added to Map')
+        else:
+            #get mac address from packet
+            # Will have to check if this is correct
+            macAddr2 = packet[Ether].src
+            firstPacket = dnsMap[packet[DNS].id]
+            ipAdds = getIPsFromDNS(packet)
+            ipAdds2= getIPsFromDNS(firstPacket)
+            print(ipAdds)
+            print(ipAdds2)
+            print(macAddr2)
+            print(firstPacket[Ether].src)
+            #check if the MAC address is same. if not raise an alarm
+            if macAddr2 != firstPacket[Ether].src:
+                print()                
+                print(str(datetime.datetime.now())+' DNS poisoning attempt')
+                print('TXID '+str(packet[DNS].id)+' Request '+packet[DNS].qd.qname.decode('utf-8')[:-1])
+                #Doubtful about this stmt
+                print('Answer 1 ',str(ipAdds2))
+                print('Answer 2 ',str(ipAdds))
+                print()
+            #else:
+                #print('False positives')
+                #print('TXID '+str(packet[DNS].id)+' Request '+packet[DNS].qd.qname.decode('utf-8')[:-1])
+                #Doubtful about this stmt
+                #print('Answer 1 ',str(ipAdds2))
+                #print('Answer 2 ',str(ipAdds))
+
+def getIPsFromDNS(packet):
+    ipAdds = []
+    ancount = packet[DNS].ancount
+    for index in range(ancount):
+        ipAdds.append(packet[DNSRR][index].rdata)
+    return ipAdds
+
+def dnsspoofcheck(interface):
+    sniff(prn=dnsDetect, iface=interface, filter='port 53')
+
+#End of DNS Spoofing Detection Scanner
+
 def exitprocess():
     sys.exit()
 
@@ -239,7 +287,8 @@ if __name__=="__main__":
 
     #End of Banner
 
-    print("\nEnter 1 for Host Discovery\n      2 for Promiscuous Mode Detection\n      3 for ARP Spoofing Detection\n      4 for IP Spoof Detection\n")
+    print("\nEnter 1 for Host Discovery\n      2 for Promiscuous Mode Detection\n      3 for ARP Spoofing Detection\n", end="")
+    print("      4 for IP Spoof Detection\n      5 for DNS Spoofing Detection\n")
     print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
     print(colored("menu", "blue", attrs=['bold']), end="")
     print(colored(") >", "green", attrs=['bold']), end=" ")
@@ -280,13 +329,13 @@ if __name__=="__main__":
     elif(featureselection==3):
         interface=input("\nEnter the Interface of the Host (Default: eth0): ")
         if len(interface)==0:
-            interface='eth0'
+            interface=conf.iface
         arpcount=0
         arpspoofcheck(interface)
     elif(featureselection==4):
         interface=input("\nEnter the Interface of the Host (Default: eth0): ")
         if len(interface)==0:
-            interface='eth0'
+            interface=conf.iface
         ttl_values={}
         try:
             threshold=int(input("\nEnter the Threshold Value (Default: 5): "))
@@ -294,6 +343,12 @@ if __name__=="__main__":
             threshold=5
         print("\nWarning: This may slow down your system and it may not respond as expected...")
         ipspoofcheck(interface)
+    elif(featureselection==5):
+        interface=input("\nEnter the Interface of the Host (Default: eth0): ")
+        if len(interface)==0:
+            interface=conf.iface
+        dnsMap={}
+        dnsspoofcheck(interface)
     exitprocess()
 
 #End of main Function
