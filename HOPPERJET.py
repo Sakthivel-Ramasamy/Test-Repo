@@ -1,3 +1,4 @@
+import argparse
 import datetime
 from getmac import get_mac_address
 import nmap
@@ -220,14 +221,10 @@ def dnsDetect(packet):
             firstPacket = dnsMap[packet[DNS].id]
             ipAdds = getIPsFromDNS(packet)
             ipAdds2= getIPsFromDNS(firstPacket)
-            print(ipAdds)
-            print(ipAdds2)
-            print(macAddr2)
-            print(firstPacket[Ether].src)
             #check if the MAC address is same. if not raise an alarm
             if macAddr2 != firstPacket[Ether].src:
                 print()                
-                print(str(datetime.datetime.now())+' DNS poisoning attempt')
+                print(str(datetime.now())+' DNS poisoning attempt')
                 print('TXID '+str(packet[DNS].id)+' Request '+packet[DNS].qd.qname.decode('utf-8')[:-1])
                 #Doubtful about this stmt
                 print('Answer 1 ',str(ipAdds2))
@@ -248,7 +245,13 @@ def getIPsFromDNS(packet):
     return ipAdds
 
 def dnsspoofcheck(interface):
-    sniff(prn=dnsDetect, iface=interface, filter='port 53')
+    argParser = argparse.ArgumentParser(add_help=False)
+    argParser.add_argument('fExp', nargs='*', default=None)
+    args = argParser.parse_args()
+    filterExp = ''
+    if args.fExp is None:
+        filterExp = 'port 53'
+    sniff(iface=interface, filter=filterExp, prn=dnsDetect)
 
 #End of DNS Spoofing Detection Scanner
 
@@ -329,13 +332,13 @@ if __name__=="__main__":
     elif(featureselection==3):
         interface=input("\nEnter the Interface of the Host (Default: eth0): ")
         if len(interface)==0:
-            interface=conf.iface
+            interface='eth0'
         arpcount=0
         arpspoofcheck(interface)
     elif(featureselection==4):
         interface=input("\nEnter the Interface of the Host (Default: eth0): ")
         if len(interface)==0:
-            interface=conf.iface
+            interface='eth0'
         ttl_values={}
         try:
             threshold=int(input("\nEnter the Threshold Value (Default: 5): "))
