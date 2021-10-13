@@ -255,6 +255,43 @@ def dnsspoofcheck(interface):
 
 #End of DNS Spoofing Detection Scanner
 
+#Start of DHCP Starvation Detection Scanner
+
+def handle_dhcp(packet):
+    global dhcpcount, dhcpdict
+    newtime = (str(datetime.now()).split(" ")[1])
+    newmac = packet.src
+    if DHCP in packet and packet[DHCP].options[0][1] == 1:  # DHCP DISCOVER PACKET
+        dhcpcount += 1
+        for time, mac in dhcpdict.items():
+            if mac != newmac and dhcpcount > 1012:
+                val = hand_washer(time, newtime, newmac)
+                if val == 0:
+                    exitprocess()
+    dhcpdict[newtime] = newmac
+
+def hand_washer(time, newtime, newmac):
+    hour1 = time.split(":")[0]
+    hour2 = newtime.split(":")[0]
+    min1 = time.split(":")[1]
+    min2 = newtime.split(":")[1]
+
+    # If the time is the same I don't need to check the milliseconds
+    # If the hour is the same but not the minutes and there are in range of 10 mins send the frame
+    if (time == newtime) or ((hour1 == hour2) and (int(min2) - int(min1) in range(10))):
+        send_frame(time, newtime, newmac)
+        return 0    
+    else:
+        return 1
+
+def send_frame(time, newtime, newmac):
+    print(colored(("\nDHCP Count = "+ str(dhcpcount) + "\nWARNING: Possible DHCP Starvation Attack Detected"), "white", "on_red", attrs=['bold']))
+
+def dhcpstarvationdetect(interface):
+    sniff(iface=interface, filter='udp and (port 67 or port 68)', prn=handle_dhcp, store=0)
+
+#End of DHCP Starvation Detection Scanner
+
 def exitprocess():
     sys.exit()
 
@@ -291,7 +328,7 @@ if __name__=="__main__":
     #End of Banner
 
     print("\nEnter 1 for Host Discovery\n      2 for Promiscuous Mode Detection\n      3 for ARP Spoofing Detection\n", end="")
-    print("      4 for IP Spoof Detection\n      5 for DNS Spoofing Detection\n")
+    print("      4 for IP Spoof Detection\n      5 for DNS Spoofing Detection\n      6 for DHCP Starvation Detection\n")
     print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
     print(colored("menu", "blue", attrs=['bold']), end="")
     print(colored(") >", "green", attrs=['bold']), end=" ")
@@ -352,6 +389,13 @@ if __name__=="__main__":
             interface=conf.iface
         dnsMap={}
         dnsspoofcheck(interface)
+    elif(featureselection==6):
+        interface=input("\nEnter the Interface of the Host (Default: eth0): ")
+        if len(interface)==0:
+            interface=conf.iface
+        dhcpcount=0
+        dhcpdict={}
+        dhcpstarvationdetect(interface)
     exitprocess()
 
 #End of main Function
