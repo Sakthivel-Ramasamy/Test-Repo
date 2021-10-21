@@ -295,7 +295,7 @@ def dhcpstarvationdetect(interface):
 
 #Start of Port Scanner
 
-def tcpconnectscan(dst_ip,dst_port,dst_timeout):
+def tcp_connect_scan(dst_ip,dst_port,dst_timeout):
     src_port = RandShort()
     tcp_connect_scan_resp = sr1(IP(dst=dst_ip)/TCP(sport=src_port,dport=dst_port,flags="S"),timeout=dst_timeout)
     if(tcp_connect_scan_resp is None):
@@ -309,7 +309,7 @@ def tcpconnectscan(dst_ip,dst_port,dst_timeout):
     else:
         return ("Error")
 
-def tcpstealthscan(dst_ip,dst_port,dst_timeout):
+def tcp_stealth_scan(dst_ip,dst_port,dst_timeout):
     src_port = RandShort()
     stealth_scan_resp = sr1(IP(dst=dst_ip)/TCP(sport=src_port,dport=dst_port,flags="S"),timeout=dst_timeout)
     if(stealth_scan_resp is None):
@@ -326,7 +326,7 @@ def tcpstealthscan(dst_ip,dst_port,dst_timeout):
     else:
         return ("Error")
 
-def tcpackscan(dst_ip,dst_port,dst_timeout):
+def tcp_ack_scan(dst_ip,dst_port,dst_timeout):
     ack_flag_scan_resp = sr1(IP(dst=dst_ip)/TCP(dport=dst_port,flags="A"),timeout=dst_timeout)
     if (ack_flag_scan_resp is None):
         return ("Stateful firewall present\n(Filtered)")
@@ -339,7 +339,7 @@ def tcpackscan(dst_ip,dst_port,dst_timeout):
     else:
         return ("Error")
 
-def tcpwindowscan(dst_ip,dst_port,dst_timeout):
+def tcp_window_scan(dst_ip,dst_port,dst_timeout):
     window_scan_resp = sr1(IP(dst=dst_ip)/TCP(dport=dst_port,flags="A"),timeout=dst_timeout)
     if (window_scan_resp is None):
         return ("No response")
@@ -351,7 +351,7 @@ def tcpwindowscan(dst_ip,dst_port,dst_timeout):
     else:
         return ("Error")
 
-def xmasscan(dst_ip,dst_port,dst_timeout):
+def xmas_scan(dst_ip,dst_port,dst_timeout):
     xmas_scan_resp = sr1(IP(dst=dst_ip)/TCP(dport=dst_port,flags="FPU"),timeout=dst_timeout)
     if (xmas_scan_resp is None):
         return ("Open|Filtered")
@@ -364,7 +364,7 @@ def xmasscan(dst_ip,dst_port,dst_timeout):
     else:
         return ("Error")
 
-def finscan(dst_ip,dst_port,dst_timeout):
+def fin_scan(dst_ip,dst_port,dst_timeout):
     fin_scan_resp = sr1(IP(dst=dst_ip)/TCP(dport=dst_port,flags="F"),timeout=dst_timeout)
     if (fin_scan_resp is None):
         return ("Open|Filtered")
@@ -377,7 +377,7 @@ def finscan(dst_ip,dst_port,dst_timeout):
     else:
         return ("Error")
 
-def nullscan(dst_ip,dst_port,dst_timeout):
+def null_scan(dst_ip,dst_port,dst_timeout):
     null_scan_resp = sr1(IP(dst=dst_ip)/TCP(dport=dst_port,flags=""),timeout=dst_timeout)
     if (null_scan_resp is None):
         return ("Open|Filtered")
@@ -390,7 +390,7 @@ def nullscan(dst_ip,dst_port,dst_timeout):
     else:
         return ("Error")
 
-def udpscan(dst_ip,dst_port,dst_timeout):
+def udp_scan(dst_ip,dst_port,dst_timeout):
     udp_scan_resp = sr1(IP(dst=dst_ip)/UDP(dport=dst_port),timeout=dst_timeout)
     if (udp_scan_resp is None):
         retrans = []
@@ -409,40 +409,151 @@ def udpscan(dst_ip,dst_port,dst_timeout):
             return ("Filtered")
     else:
         return ("Error")
+def tcp_connect_scan_port_scanner(ip, ports, timeout):
+    outputtable = prettytable.PrettyTable(["Port", "TCP Connect Scan"])
+    #outputtable.align["Port No."] = "l"
+    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    
+    for i in ports:
+        print("\nStarting TCP Connect Scan for {}:{}...".format(ip, i))
+        tcp_connect_scan_res = tcp_connect_scan(ip,int(i),int(timeout))
+        print("TCP Connect Scan Completed for {}:{}".format(ip, i))
+        outputtable.add_row([i, tcp_connect_scan_res])
+    print("\n[*] Scan Completed for the Target: {}\n\nTCP Connect Scan Result:".format(ip))
+    print(outputtable)
 
-def portscanner(ip, ports, timeout):
-    outputtable = prettytable.PrettyTable(["Port","TCP Connect Scan", "TCP Stealth Scan", "TCP ACK Scan", "TCP Window Scan", "XMAS Scan", "FIN Scan", "NULL Scan", "UDP Scan"])
+def tcp_stealth_scan_port_scanner(ip, ports, timeout):
+    outputtable = prettytable.PrettyTable(["Port", "TCP Stealth Scan"])
+    #outputtable.align["Port No."] = "l"
+    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    
+    for i in ports:
+        print("\nStarting TCP Stealth Scan for {}:{}...".format(ip, i))
+        tcp_stealth_scan_res = tcp_stealth_scan(ip,int(i),int(timeout))
+        print("TCP Stealth Scan Completed for {}:{}".format(ip, i))
+        outputtable.add_row([i, tcp_stealth_scan_res])
+    print("\n[*] Scan Completed for the Target: {}\n\nTCP Stealth Scan Result:".format(ip))
+    print(outputtable)
+
+def tcp_ack_scan_port_scanner(ip, ports, timeout):
+    outputtable = prettytable.PrettyTable(["Port", "TCP ACK Scan"])
+    #outputtable.align["Port No."] = "l"
+    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    
+    for i in ports:        
+        print("\nStaring TCP ACK Scan for {}:{}...".format(ip, i))
+        tcp_ack_flag_scan_res = tcp_ack_scan(ip,int(i),int(timeout))
+        print("TCP ACK Scan Completed for {}:{}".format(ip, i))
+        outputtable.add_row([i, tcp_ack_flag_scan_res])
+    print("\n[*] Scan Completed for the Target: {}\n\nTCP ACK Scan Result:".format(ip))
+    print(outputtable)
+
+def tcp_window_scan_port_scanner(ip, ports, timeout):
+    outputtable = prettytable.PrettyTable(["Port", "TCP Window Scan"])
+    #outputtable.align["Port No."] = "l"
+    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    
+    for i in ports:
+        print("\nStarting TCP Window Scan for {}:{}...".format(ip, i))
+        tcp_window_scan_res = tcp_window_scan(ip,int(i),int(timeout))
+        print("TCP Window Scan Completed for {}:{}".format(ip, i))
+        outputtable.add_row([i, tcp_window_scan_res])
+    print("\n[*] Scan Completed for the Target: {}\n\nTCP Window Scan Result:".format(ip))
+    print(outputtable)
+
+def xmas_scan_port_scanner(ip, ports, timeout):
+    outputtable = prettytable.PrettyTable(["Port", "XMAS Scan"])
+    #outputtable.align["Port No."] = "l"
+    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    
+    for i in ports:
+        print("\nStarting XMAS Scan for {}:{}...".format(ip, i))
+        xmas_scan_res = xmas_scan(ip,int(i),int(timeout))
+        print("XMAS Scan Completed for {}:{}".format(ip, i))
+        outputtable.add_row([i, xmas_scan_res])
+    print("\n[*] Scan Completed for the Target: {}\n\nXMAS Scan Result:".format(ip))
+    print(outputtable)
+
+def fin_scan_port_scanner(ip, ports, timeout):
+    outputtable = prettytable.PrettyTable(["Port", "FIN Scan"])
+    #outputtable.align["Port No."] = "l"
+    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    
+    for i in ports: 
+        print("\nStarting FIN Scan for {}:{}...".format(ip, i))
+        fin_scan_res = fin_scan(ip,int(i),int(timeout))
+        print("FIN Scan Completed for {}:{}".format(ip, i))
+        outputtable.add_row([i, fin_scan_res])
+    print("\n[*] Scan Completed for the Target: {}\n\nFIN Scan Result:".format(ip))
+    print(outputtable)
+
+def null_scan_port_scanner(ip, ports, timeout):
+    outputtable = prettytable.PrettyTable(["Port", "NULL Scan"])
+    #outputtable.align["Port No."] = "l"
+    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    
+    for i in ports:
+        print("\nStarting NULL Scan for {}:{}...".format(ip, i))
+        null_scan_res = null_scan(ip,int(i),int(timeout))
+        print("NULL Scan Completed for {}:{}".format(ip, i))      
+        outputtable.add_row([i, null_scan_res])
+    print("\n[*] Scan Completed for the Target: {}\n\nNULL Scan Result:".format(ip))
+    print(outputtable)
+
+def udp_scan_port_scanner(ip, ports, timeout):
+    outputtable = prettytable.PrettyTable(["Port", "UDP Scan"])
+    #outputtable.align["Port No."] = "l"
+    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    
+    for i in ports:
+        print("\nStarting UDP Scan for {}:{}...".format(ip, i))
+        udp_scan_res = udp_scan(ip,int(i),int(timeout))
+        print("UDP Scan Completed for {}:{}".format(ip, i))
+        outputtable.add_row([i, udp_scan_res])
+    print("\n[*] Scan Completed for the Target: {}\n\nUDP Scan Result:".format(ip))
+    print(outputtable)
+
+def all_methods_port_scanner(ip, ports, timeout):
+    outputtable = prettytable.PrettyTable(["Port", "TCP Connect Scan", "TCP Stealth Scan", "TCP ACK Scan", "TCP Window Scan", "XMAS Scan", "FIN Scan", "NULL Scan", "UDP Scan"])
     #outputtable.align["Port No."] = "l"
     
     print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
     
     for i in ports:        
         print("\nStarting TCP Connect Scan for {}:{}...".format(ip, i))
-        tcp_connect_scan_res = tcpconnectscan(ip,int(i),int(timeout))
+        tcp_connect_scan_res = tcp_connect_scan(ip,int(i),int(timeout))
         print("TCP Connect Scan Completed for {}:{}".format(ip, i))
         print("\nStarting TCP Stealth Scan for {}:{}...".format(ip, i))
-        stealth_scan_res = tcpstealthscan(ip,int(i),int(timeout))
+        tcp_stealth_scan_res = tcp_stealth_scan(ip,int(i),int(timeout))
         print("TCP Stealth Scan Completed for {}:{}".format(ip, i))
         print("\nStaring TCP ACK Scan for {}:{}...".format(ip, i))
-        ack_flag_scan_res = tcpackscan(ip,int(i),int(timeout))
+        tcp_ack_flag_scan_res = tcp_ack_scan(ip,int(i),int(timeout))
         print("TCP ACK Scan Completed for {}:{}".format(ip, i))
         print("\nStarting TCP Window Scan for {}:{}...".format(ip, i))
-        window_scan_res = tcpwindowscan(ip,int(i),int(timeout))
+        tcp_window_scan_res = tcp_window_scan(ip,int(i),int(timeout))
         print("TCP Window Scan Completed for {}:{}".format(ip, i))
         print("\nStarting XMAS Scan for {}:{}...".format(ip, i))
-        xmas_scan_res = xmasscan(ip,int(i),int(timeout))
+        xmas_scan_res = xmas_scan(ip,int(i),int(timeout))
         print("XMAS Scan Completed for {}:{}".format(ip, i))
         print("\nStarting FIN Scan for {}:{}...".format(ip, i))
-        fin_scan_res = finscan(ip,int(i),int(timeout))
+        fin_scan_res = fin_scan(ip,int(i),int(timeout))
         print("FIN Scan Completed for {}:{}".format(ip, i))
         print("\nStarting NULL Scan for {}:{}...".format(ip, i))
-        null_scan_res = nullscan(ip,int(i),int(timeout))
+        null_scan_res = null_scan(ip,int(i),int(timeout))
         print("NULL Scan Completed for {}:{}".format(ip, i))      
         print("\nStarting UDP Scan for {}:{}...".format(ip, i))
-        udp_scan_res = udpscan(ip,int(i),int(timeout))
+        udp_scan_res = udp_scan(ip,int(i),int(timeout))
         print("UDP Scan Completed for {}:{}".format(ip, i))
-        outputtable.add_row([i,tcp_connect_scan_res,stealth_scan_res,ack_flag_scan_res,window_scan_res,xmas_scan_res,fin_scan_res,null_scan_res,udp_scan_res])
-    print("\n[*] Scan Completed for Target: {}\n\nResult:".format(ip))
+        outputtable.add_row([i, tcp_connect_scan_res, tcp_stealth_scan_res, tcp_ack_flag_scan_res, tcp_window_scan_res, xmas_scan_res, fin_scan_res, null_scan_res, udp_scan_res])
+    print("\n[*] Scan Completed for the Target: {}\n\nResult:".format(ip))
     print(outputtable)    
 
 #End of Port Scanner
@@ -472,7 +583,7 @@ if __name__=="__main__":
     print()
     print("****************************************************************************************")
     print("*                                                                                      *")
-    print("*             Copyright of Sakthivel Ramasamy, Karthikeyan P, Yayay S 2021             *")
+    print("*            Copyright of Sakthivel Ramasamy, Karthikeyan P, Yayady S 2021             *")
     print("*                                                                                      *")
     print("*                        https://github.com/Sakthivel-Ramasamy                         *")
     print("*                                                                                      *")
@@ -493,7 +604,7 @@ if __name__=="__main__":
         print(colored("menu->hostdiscovery", "blue", attrs=['bold']), end="")
         print(colored(") >", "green", attrs=['bold']), end=" ")
         choice=int(input())
-        if (choice==1):
+        if(choice==1):
             hostdiscoveryscannerusingnmap()
         elif(choice==2):
             hostdiscoveryscannerusingscapy()
@@ -516,7 +627,7 @@ if __name__=="__main__":
             print(colored("hopperjetmenu->promiscuousmodedetection->selectmethod", "blue", attrs=['bold']), end="")
             print(colored(") >", "green", attrs=['bold']), end=" ")
             choice=int(input())
-            if (choice==1):
+            if(choice==1):
                 promiscuousdevicescannerusingnmap()
             elif(choice==2):
                 promiscuousdevicescannerusingscapy()
@@ -554,11 +665,16 @@ if __name__=="__main__":
         print("\nUpcoming...")
     elif(featureselection==8):
         ip=input("\nEnter the Target IP Address: ")
+        port=input("\nEnter the Port(s) to Scan: ")        
         try:
             timeout=int(input("\nEnter the Timeout Duration (Default: 2): "))
         except ValueError:
             timeout=2
-        port=input("\nEnter the Port(s) to Scan: ")
+        try:
+            verbose=int(input("\nEnter the Level of Verbosity [From 0 (almost mute) to 3 (verbose)] (Default: 0): "))
+        except ValueError:
+            verbose=0
+        conf.verb=verbose
         ports=[]
         if "," in port:
             port=port.split(",")
@@ -579,7 +695,33 @@ if __name__=="__main__":
                 new_ports.append(int(item))
         ports = new_ports
         ports.sort()
-        portscanner(ip, ports, timeout)
+        print("\nEnter 1 for TCP Connect Scan\n      2 for TCP Stealth Scan\n      3 for TCP ACK Scan\n      4 for TCP Window Scan", end="")
+        print("\n      5 for XMAS Scan\n      6 for FIN Scan\n      7 for NULL Scan\n      8 for UDP Scan\n      9 for All of the Above Scans (Default Option)\n")
+        print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
+        print(colored("hopperjetmenu->portscanner->selectmethod", "blue", attrs=['bold']), end="")
+        print(colored(") >", "green", attrs=['bold']), end=" ")
+        try:
+            portscannerchoice=int(input())
+        except ValueError:
+            portscannerchoice=9
+        if(portscannerchoice==1):
+            tcp_connect_scan_port_scanner(ip, ports, timeout)
+        elif(portscannerchoice==2):
+            tcp_stealth_scan_port_scanner(ip, ports, timeout)
+        elif(portscannerchoice==3):
+            tcp_ack_scan_port_scanner(ip, ports, timeout)
+        elif(portscannerchoice==4):
+            tcp_window_scan_port_scanner(ip, ports, timeout)
+        elif(portscannerchoice==5):
+            xmas_scan_port_scanner(ip, ports, timeout)
+        elif(portscannerchoice==6):
+            fin_scan_port_scanner(ip, ports, timeout)
+        elif(portscannerchoice==7):
+            null_scan_port_scanner(ip, ports, timeout)
+        elif(portscannerchoice==8):
+            udp_scan_port_scanner(ip, ports, timeout)
+        elif(portscannerchoice==9):
+            all_methods_port_scanner(ip, ports, timeout)
     exitprocess()
 
 #End of main Function
