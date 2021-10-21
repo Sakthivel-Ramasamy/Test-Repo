@@ -3,6 +3,7 @@ import datetime
 from getmac import get_mac_address
 import nmap
 import os
+import prettytable
 from scapy.all import *
 import sys
 from termcolor import colored
@@ -292,8 +293,166 @@ def dhcpstarvationdetect(interface):
 
 #End of DHCP Starvation Detection Scanner
 
+#Start of Port Scanner
+
+def tcpconnectscan(dst_ip,dst_port,dst_timeout):
+    src_port = RandShort()
+    tcp_connect_scan_resp = sr1(IP(dst=dst_ip)/TCP(sport=src_port,dport=dst_port,flags="S"),timeout=dst_timeout)
+    if(tcp_connect_scan_resp is None):
+        return ("Closed")
+    elif(tcp_connect_scan_resp.haslayer(TCP)):
+        if(tcp_connect_scan_resp.getlayer(TCP).flags == 0x12):
+            send_rst = sr(IP(dst=dst_ip)/TCP(sport=src_port,dport=dst_port,flags="AR"),timeout=dst_timeout)
+            return ("Open")
+        elif (tcp_connect_scan_resp.getlayer(TCP).flags == 0x14):
+            return ("Closed")
+    else:
+        return ("Error")
+
+def tcpstealthscan(dst_ip,dst_port,dst_timeout):
+    src_port = RandShort()
+    stealth_scan_resp = sr1(IP(dst=dst_ip)/TCP(sport=src_port,dport=dst_port,flags="S"),timeout=dst_timeout)
+    if(stealth_scan_resp is None):
+        return ("Filtered")
+    elif(stealth_scan_resp.haslayer(TCP)):
+        if(stealth_scan_resp.getlayer(TCP).flags == 0x12):
+            send_rst = sr(IP(dst=dst_ip)/TCP(sport=src_port,dport=dst_port,flags="R"),timeout=dst_timeout)
+            return ("Open")
+        elif (stealth_scan_resp.getlayer(TCP).flags == 0x14):
+            return ("Closed")
+    elif(stealth_scan_resp.haslayer(ICMP)):
+        if(int(stealth_scan_resp.getlayer(ICMP).type)==3 and int(stealth_scan_resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
+            return ("Filtered")
+    else:
+        return ("Error")
+
+def tcpackscan(dst_ip,dst_port,dst_timeout):
+    ack_flag_scan_resp = sr1(IP(dst=dst_ip)/TCP(dport=dst_port,flags="A"),timeout=dst_timeout)
+    if (ack_flag_scan_resp is None):
+        return ("Stateful firewall present\n(Filtered)")
+    elif(ack_flag_scan_resp.haslayer(TCP)):
+        if(ack_flag_scan_resp.getlayer(TCP).flags == 0x4):
+            return ("No firewall\n(Unfiltered)")
+    elif(ack_flag_scan_resp.haslayer(ICMP)):
+        if(int(ack_flag_scan_resp.getlayer(ICMP).type)==3 and int(ack_flag_scan_resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
+            return ("Stateful firewall present\n(Filtered)")
+    else:
+        return ("Error")
+
+def tcpwindowscan(dst_ip,dst_port,dst_timeout):
+    window_scan_resp = sr1(IP(dst=dst_ip)/TCP(dport=dst_port,flags="A"),timeout=dst_timeout)
+    if (window_scan_resp is None):
+        return ("No response")
+    elif(window_scan_resp.haslayer(TCP)):
+        if(window_scan_resp.getlayer(TCP).window == 0):
+            return ("Closed")
+        elif(window_scan_resp.getlayer(TCP).window > 0):
+            return ("Open")
+    else:
+        return ("Error")
+
+def xmasscan(dst_ip,dst_port,dst_timeout):
+    xmas_scan_resp = sr1(IP(dst=dst_ip)/TCP(dport=dst_port,flags="FPU"),timeout=dst_timeout)
+    if (xmas_scan_resp is None):
+        return ("Open|Filtered")
+    elif(xmas_scan_resp.haslayer(TCP)):
+        if(xmas_scan_resp.getlayer(TCP).flags == 0x14):
+            return ("Closed")
+    elif(xmas_scan_resp.haslayer(ICMP)):
+        if(int(xmas_scan_resp.getlayer(ICMP).type)==3 and int(xmas_scan_resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
+            return ("Filtered")
+    else:
+        return ("Error")
+
+def finscan(dst_ip,dst_port,dst_timeout):
+    fin_scan_resp = sr1(IP(dst=dst_ip)/TCP(dport=dst_port,flags="F"),timeout=dst_timeout)
+    if (fin_scan_resp is None):
+        return ("Open|Filtered")
+    elif(fin_scan_resp.haslayer(TCP)):
+        if(fin_scan_resp.getlayer(TCP).flags == 0x14):
+            return ("Closed")
+    elif(fin_scan_resp.haslayer(ICMP)):
+        if(int(fin_scan_resp.getlayer(ICMP).type)==3 and int(fin_scan_resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
+            return ("Filtered")
+    else:
+        return ("Error")
+
+def nullscan(dst_ip,dst_port,dst_timeout):
+    null_scan_resp = sr1(IP(dst=dst_ip)/TCP(dport=dst_port,flags=""),timeout=dst_timeout)
+    if (null_scan_resp is None):
+        return ("Open|Filtered")
+    elif(null_scan_resp.haslayer(TCP)):
+        if(null_scan_resp.getlayer(TCP).flags == 0x14):
+            return ("Closed")
+    elif(null_scan_resp.haslayer(ICMP)):
+        if(int(null_scan_resp.getlayer(ICMP).type)==3 and int(null_scan_resp.getlayer(ICMP).code) in [1,2,3,9,10,13]):
+            return ("Filtered")
+    else:
+        return ("Error")
+
+def udpscan(dst_ip,dst_port,dst_timeout):
+    udp_scan_resp = sr1(IP(dst=dst_ip)/UDP(dport=dst_port),timeout=dst_timeout)
+    if (udp_scan_resp is None):
+        retrans = []
+        for count in range(0,3):
+            retrans.append(sr1(IP(dst=dst_ip)/UDP(dport=dst_port),timeout=dst_timeout))
+        for item in retrans:
+            if (item is not None):
+                udp_scan(dst_ip,dst_port,dst_timeout)
+        return ("Open|Filtered")
+    elif (udp_scan_resp.haslayer(UDP)):
+        return ("Open")
+    elif(udp_scan_resp.haslayer(ICMP)):
+        if(int(udp_scan_resp.getlayer(ICMP).type)==3 and int(udp_scan_resp.getlayer(ICMP).code)==3):
+            return ("Closed")
+        elif(int(udp_scan_resp.getlayer(ICMP).type)==3 and int(udp_scan_resp.getlayer(ICMP).code) in [1,2,9,10,13]):
+            return ("Filtered")
+    else:
+        return ("Error")
+
+def portscanner(ip, ports, timeout):
+    outputtable = prettytable.PrettyTable(["Port","TCP Connect Scan", "TCP Stealth Scan", "TCP ACK Scan", "TCP Window Scan", "XMAS Scan", "FIN Scan", "NULL Scan", "UDP Scan"])
+    #outputtable.align["Port No."] = "l"
+    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    
+    for i in ports:        
+        print("\nStarting TCP Connect Scan for {}:{}...".format(ip, i))
+        tcp_connect_scan_res = tcpconnectscan(ip,int(i),int(timeout))
+        print("TCP Connect Scan Completed for {}:{}".format(ip, i))
+        print("\nStarting TCP Stealth Scan for {}:{}...".format(ip, i))
+        stealth_scan_res = tcpstealthscan(ip,int(i),int(timeout))
+        print("TCP Stealth Scan Completed for {}:{}".format(ip, i))
+        print("\nStaring TCP ACK Scan for {}:{}...".format(ip, i))
+        ack_flag_scan_res = tcpackscan(ip,int(i),int(timeout))
+        print("TCP ACK Scan Completed for {}:{}".format(ip, i))
+        print("\nStarting TCP Window Scan for {}:{}...".format(ip, i))
+        window_scan_res = tcpwindowscan(ip,int(i),int(timeout))
+        print("TCP Window Scan Completed for {}:{}".format(ip, i))
+        print("\nStarting XMAS Scan for {}:{}...".format(ip, i))
+        xmas_scan_res = xmasscan(ip,int(i),int(timeout))
+        print("XMAS Scan Completed for {}:{}".format(ip, i))
+        print("\nStarting FIN Scan for {}:{}...".format(ip, i))
+        fin_scan_res = finscan(ip,int(i),int(timeout))
+        print("FIN Scan Completed for {}:{}".format(ip, i))
+        print("\nStarting NULL Scan for {}:{}...".format(ip, i))
+        null_scan_res = nullscan(ip,int(i),int(timeout))
+        print("NULL Scan Completed for {}:{}".format(ip, i))      
+        print("\nStarting UDP Scan for {}:{}...".format(ip, i))
+        udp_scan_res = udpscan(ip,int(i),int(timeout))
+        print("UDP Scan Completed for {}:{}".format(ip, i))
+        outputtable.add_row([i,tcp_connect_scan_res,stealth_scan_res,ack_flag_scan_res,window_scan_res,xmas_scan_res,fin_scan_res,null_scan_res,udp_scan_res])
+    print("\n[*] Scan Completed for Target: {}\n\nResult:".format(ip))
+    print(outputtable)    
+
+#End of Port Scanner
+
+#Start of Exit Process
+
 def exitprocess():
     sys.exit()
+
+#End of Exit Process
 
 #Start of main Function
     
@@ -303,32 +462,27 @@ if __name__=="__main__":
     #Start of Banner
     
     print(colored("""
-        ██╗  ██╗ ██████╗ ██████╗ ██████╗ ███████╗██████╗      ██╗███████╗████████╗
-        ██║  ██║██╔═══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗     ██║██╔════╝╚══██╔══╝
-        ███████║██║   ██║██████╔╝██████╔╝█████╗  ██████╔╝     ██║█████╗     ██║   
-        ██╔══██║██║   ██║██╔═══╝ ██╔═══╝ ██╔══╝  ██╔══██╗██   ██║██╔══╝     ██║   
-        ██║  ██║╚██████╔╝██║     ██║     ███████╗██║  ██║╚█████╔╝███████╗   ██║   
-        ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝     ╚══════╝╚═╝  ╚═╝ ╚════╝ ╚══════╝   ╚═╝
-        ___ ___ ________ _________________________________________      ____.______________________
-        /   |   \\_____  \\______   \______   \_   _____/\______   \    |    |\_   _____/\__    ___/
-        /    ~    \/   |   \|     ___/|     ___/|    __)_  |       _/    |    | |    __)_   |    |   
-        \    Y    /    |    \    |    |    |    |        \ |    |   \/\__|    | |        \  |    |   
-        \___|_  /\_______  /____|    |____|   /_______  / |____|_  /\________|/_______  /  |____|   
-            \/         \/                           \/         \/                   \/   
+       ██╗  ██╗ ██████╗ ██████╗ ██████╗ ███████╗██████╗      ██╗███████╗████████╗
+       ██║  ██║██╔═══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗     ██║██╔════╝╚══██╔══╝
+       ███████║██║   ██║██████╔╝██████╔╝█████╗  ██████╔╝     ██║█████╗     ██║   
+       ██╔══██║██║   ██║██╔═══╝ ██╔═══╝ ██╔══╝  ██╔══██╗██   ██║██╔══╝     ██║   
+       ██║  ██║╚██████╔╝██║     ██║     ███████╗██║  ██║╚█████╔╝███████╗   ██║   
+       ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝     ╚══════╝╚═╝  ╚═╝ ╚════╝ ╚══════╝   ╚═╝
     """, "red", attrs=['bold']))
     print()
-    print("*****************************************************************")
-    print("*                                                               *")
-    print("*             Copyright of Sakthivel Ramasamy, 2021             *")
-    print("*                                                               *")
-    print("*             https://github.com/Sakthivel-Ramasamy             *")
-    print("*                                                               *")
-    print("*****************************************************************")
+    print("****************************************************************************************")
+    print("*                                                                                      *")
+    print("*             Copyright of Sakthivel Ramasamy, Karthikeyan P, Yayay S 2021             *")
+    print("*                                                                                      *")
+    print("*                        https://github.com/Sakthivel-Ramasamy                         *")
+    print("*                                                                                      *")
+    print("****************************************************************************************")
 
     #End of Banner
 
     print("\nEnter 1 for Host Discovery\n      2 for Promiscuous Mode Detection\n      3 for ARP Spoofing Detection\n", end="")
-    print("      4 for IP Spoof Detection\n      5 for DNS Spoofing Detection\n      6 for DHCP Starvation Detection\n")
+    print("      4 for IP Spoof Detection\n      5 for DNS Spoofing Detection\n      6 for DHCP Starvation Detection\n", end="")
+    print("      7 for OS Detection\n      8 for Port Scanner\n")
     print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
     print(colored("menu", "blue", attrs=['bold']), end="")
     print(colored(") >", "green", attrs=['bold']), end=" ")
@@ -396,6 +550,36 @@ if __name__=="__main__":
         dhcpcount=0
         dhcpdict={}
         dhcpstarvationdetect(interface)
+    elif(featureselection==7):
+        print("\nUpcoming...")
+    elif(featureselection==8):
+        ip=input("\nEnter the Target IP Address: ")
+        try:
+            timeout=int(input("\nEnter the Timeout Duration (Default: 2): "))
+        except ValueError:
+            timeout=2
+        port=input("\nEnter the Port(s) to Scan: ")
+        ports=[]
+        if "," in port:
+            port=port.split(",")
+            port.sort()
+            ports+=port
+        elif "-" in port:
+            port=port.split("-")
+            port.sort()
+            portlow=int(port[0])
+            porthigh=int(port[1])
+            portrange=range(portlow, porthigh)
+            ports+=portrange
+        else:
+            ports.append(port)
+        ports = list(set(ports))
+        new_ports=[]
+        for item in ports:
+                new_ports.append(int(item))
+        ports = new_ports
+        ports.sort()
+        portscanner(ip, ports, timeout)
     exitprocess()
 
 #End of main Function
