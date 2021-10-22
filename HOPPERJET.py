@@ -1,6 +1,7 @@
 import argparse
 import datetime
 from getmac import get_mac_address
+import ipaddress
 import nmap
 import os
 import prettytable
@@ -18,15 +19,23 @@ def hostdiscoveryscannerusingnmap():
         network=ip
     print("\nScanning Please Wait...")
     print("(Note: This may take some time)")
-    nm=nmap.PortScanner()
-    nm.scan(hosts=network, arguments='-sn')
-    host_list=[(x, nm[x]['status']['state']) for x in nm.all_hosts()]
     counthost=0
     print()
-    for host, status in host_list:
-        mac=get_mac_address(ip=host)
-        print("IP Address: {} MAC Address: {}".format(host, mac))
+    nm=nmap.PortScanner()
+    nm.scan(hosts=network, arguments='-sn')
+    host_list=list(nm.all_hosts())
+    #host_list=sorted(ipaddress.ip_address(ipaddr) for ipaddr in host_list)
+    host_list=sorted(host_list, key=ipaddress.IPv4Address)
+    host_discovery_using_nmap_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address"])
+    for host in host_list:
         counthost+=1
+        try:
+            macaddress=nm[host]['addresses']['mac']
+        except:
+            macaddress="Might be a local interface / Not running as a super user / Error in getting it..."
+        host_discovery_using_nmap_output_table.add_row([counthost, host, macaddress])
+    print("\nHost Discovery Using Nmap Result:")
+    print(host_discovery_using_nmap_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
 
 def hostdiscoveryscannerusingscapy():
@@ -41,9 +50,13 @@ def hostdiscoveryscannerusingscapy():
     result=srp(a,timeout=3,verbose=False)[0]
     counthost=0
     print()
+    host_discovery_using_scapy_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address"])
     for element in result:
-        print("IP Address: {} MAC Address: {}".format(element[1].psrc, element[1].hwsrc))
+        #print("IP Address: {} MAC Address: {}".format(element[1].psrc, element[1].hwsrc))
         counthost+=1
+        host_discovery_using_scapy_output_table.add_row([counthost, element[1].psrc, element[1].hwsrc])
+    print("\nHost Discovery Using Scapy Result:")
+    print(host_discovery_using_scapy_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
 
 #End of Host Discovery Scanner
@@ -54,9 +67,6 @@ def pro_mac(ip):
     a=Ether(dst="FF:FF:FF:FF:FF:FE")/ARP(pdst=ip)
     result = srp(a,timeout=3,verbose=False)[0]
     return result[0][1].hwsrc
-
-countpromiscuoushost=0
-countnotpromiscuoushost=0
     
 def pro_start(ip):
     global countpromiscuoushost
@@ -79,16 +89,19 @@ def promiscuousdevicescannerusingnmap():
     print("(Note: This may take some time)")
     nm=nmap.PortScanner()
     nm.scan(hosts=network, arguments='-sn')
-    host_list=[(x, nm[x]['status']['state']) for x in nm.all_hosts()]
+    #host_list=[(x, nm[x]['status']['state']) for x in nm.all_hosts()]
+    host_list=list(nm.all_hosts())
+    #host_list=sorted(ipaddress.ip_address(ipaddr) for ipaddr in host_list)
+    host_list=sorted(host_list, key=ipaddress.IPv4Address)
     counthost=0
     global countpromiscuoushost
     global countnotpromiscuoushost
     countpromiscuoushost=0
     countnotpromiscuoushost=0
-    for host, status in host_list:
+    for host in host_list:
         mac=get_mac_address(ip=host)
-        print("\nIP Address: {} MAC Address: {}".format(host, mac))
         counthost+=1
+        print("\nIP Address: {} MAC Address: {}".format(host, mac))
         pro_start(host)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
     print("Number of Hosts in Promisucous Mode = {}\nNumber of Hosts not in Promisucous Mode = {}".format(countpromiscuoushost, countnotpromiscuoushost))
@@ -108,9 +121,9 @@ def promiscuousdevicescannerusingscapy():
     global countnotpromiscuoushost
     countpromiscuoushost=0
     countnotpromiscuoushost=0
-    for element in result:
-        print("\nIP Address: {} MAC Address: {}".format(element[1].psrc, element[1].hwsrc))
+    for element in result:        
         counthost+=1
+        print("\nIP Address: {} MAC Address: {}".format(element[1].psrc, element[1].hwsrc))
         pro_start(element[1].psrc)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
     print("Number of Hosts in Promisucous Mode = {}\nNumber of Hosts not in Promisucous Mode = {}".format(countpromiscuoushost, countnotpromiscuoushost))
@@ -409,125 +422,125 @@ def udp_scan(dst_ip,dst_port,dst_timeout):
             return ("Filtered")
     else:
         return ("Error")
-def tcp_connect_scan_port_scanner(ip, ports, timeout):
-    outputtable = prettytable.PrettyTable(["Port", "TCP Connect Scan"])
+def tcp_connect_scan_port_scanner(ip, port_list, timeout):
+    tcp_connect_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP Connect Scan"])
     #outputtable.align["Port No."] = "l"
     
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
     
-    for i in ports:
+    for i in port_list:
         print("\nStarting TCP Connect Scan for {}:{}...".format(ip, i))
         tcp_connect_scan_res = tcp_connect_scan(ip,int(i),int(timeout))
         print("TCP Connect Scan Completed for {}:{}".format(ip, i))
-        outputtable.add_row([i, tcp_connect_scan_res])
+        tcp_connect_scan_port_scanner_output_table.add_row([i, tcp_connect_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nTCP Connect Scan Result:".format(ip))
-    print(outputtable)
+    print(tcp_connect_scan_port_scanner_output_table)
 
-def tcp_stealth_scan_port_scanner(ip, ports, timeout):
-    outputtable = prettytable.PrettyTable(["Port", "TCP Stealth Scan"])
+def tcp_stealth_scan_port_scanner(ip, port_list, timeout):
+    tcp_stealth_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP Stealth Scan"])
     #outputtable.align["Port No."] = "l"
     
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
     
-    for i in ports:
+    for i in port_list:
         print("\nStarting TCP Stealth Scan for {}:{}...".format(ip, i))
         tcp_stealth_scan_res = tcp_stealth_scan(ip,int(i),int(timeout))
         print("TCP Stealth Scan Completed for {}:{}".format(ip, i))
-        outputtable.add_row([i, tcp_stealth_scan_res])
+        tcp_stealth_scan_port_scanner_output_table.add_row([i, tcp_stealth_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nTCP Stealth Scan Result:".format(ip))
-    print(outputtable)
+    print(tcp_stealth_scan_port_scanner_output_table)
 
-def tcp_ack_scan_port_scanner(ip, ports, timeout):
-    outputtable = prettytable.PrettyTable(["Port", "TCP ACK Scan"])
+def tcp_ack_scan_port_scanner(ip, port_list, timeout):
+    tcp_ack_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP ACK Scan"])
     #outputtable.align["Port No."] = "l"
     
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
     
-    for i in ports:        
+    for i in port_list:        
         print("\nStaring TCP ACK Scan for {}:{}...".format(ip, i))
         tcp_ack_flag_scan_res = tcp_ack_scan(ip,int(i),int(timeout))
         print("TCP ACK Scan Completed for {}:{}".format(ip, i))
-        outputtable.add_row([i, tcp_ack_flag_scan_res])
+        tcp_ack_scan_port_scanner_output_table.add_row([i, tcp_ack_flag_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nTCP ACK Scan Result:".format(ip))
-    print(outputtable)
+    print(tcp_ack_scan_port_scanner_output_table)
 
-def tcp_window_scan_port_scanner(ip, ports, timeout):
-    outputtable = prettytable.PrettyTable(["Port", "TCP Window Scan"])
+def tcp_window_scan_port_scanner(ip, port_list, timeout):
+    tcp_window_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP Window Scan"])
     #outputtable.align["Port No."] = "l"
     
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
     
-    for i in ports:
+    for i in port_list:
         print("\nStarting TCP Window Scan for {}:{}...".format(ip, i))
         tcp_window_scan_res = tcp_window_scan(ip,int(i),int(timeout))
         print("TCP Window Scan Completed for {}:{}".format(ip, i))
-        outputtable.add_row([i, tcp_window_scan_res])
+        tcp_window_scan_port_scanner_output_table.add_row([i, tcp_window_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nTCP Window Scan Result:".format(ip))
-    print(outputtable)
+    print(tcp_window_scan_port_scanner_output_table)
 
-def xmas_scan_port_scanner(ip, ports, timeout):
-    outputtable = prettytable.PrettyTable(["Port", "XMAS Scan"])
+def xmas_scan_port_scanner(ip, port_list, timeout):
+    xmas_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "XMAS Scan"])
     #outputtable.align["Port No."] = "l"
     
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
     
-    for i in ports:
+    for i in port_list:
         print("\nStarting XMAS Scan for {}:{}...".format(ip, i))
         xmas_scan_res = xmas_scan(ip,int(i),int(timeout))
         print("XMAS Scan Completed for {}:{}".format(ip, i))
-        outputtable.add_row([i, xmas_scan_res])
+        xmas_scan_port_scanner_output_table.add_row([i, xmas_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nXMAS Scan Result:".format(ip))
-    print(outputtable)
+    print(xmas_scan_port_scanner_output_table)
 
-def fin_scan_port_scanner(ip, ports, timeout):
-    outputtable = prettytable.PrettyTable(["Port", "FIN Scan"])
+def fin_scan_port_scanner(ip, port_list, timeout):
+    fin_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "FIN Scan"])
     #outputtable.align["Port No."] = "l"
     
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
     
-    for i in ports: 
+    for i in port_list: 
         print("\nStarting FIN Scan for {}:{}...".format(ip, i))
         fin_scan_res = fin_scan(ip,int(i),int(timeout))
         print("FIN Scan Completed for {}:{}".format(ip, i))
-        outputtable.add_row([i, fin_scan_res])
+        fin_scan_port_scanner_output_table.add_row([i, fin_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nFIN Scan Result:".format(ip))
-    print(outputtable)
+    print(fin_scan_port_scanner_output_table)
 
-def null_scan_port_scanner(ip, ports, timeout):
-    outputtable = prettytable.PrettyTable(["Port", "NULL Scan"])
+def null_scan_port_scanner(ip, port_list, timeout):
+    null_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "NULL Scan"])
     #outputtable.align["Port No."] = "l"
     
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
     
-    for i in ports:
+    for i in port_list:
         print("\nStarting NULL Scan for {}:{}...".format(ip, i))
         null_scan_res = null_scan(ip,int(i),int(timeout))
         print("NULL Scan Completed for {}:{}".format(ip, i))      
-        outputtable.add_row([i, null_scan_res])
+        null_scan_port_scanner_output_table.add_row([i, null_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nNULL Scan Result:".format(ip))
-    print(outputtable)
+    print(null_scan_port_scanner_output_table)
 
-def udp_scan_port_scanner(ip, ports, timeout):
-    outputtable = prettytable.PrettyTable(["Port", "UDP Scan"])
+def udp_scan_port_scanner(ip, port_list, timeout):
+    udp_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "UDP Scan"])
     #outputtable.align["Port No."] = "l"
     
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
     
-    for i in ports:
+    for i in port_list:
         print("\nStarting UDP Scan for {}:{}...".format(ip, i))
         udp_scan_res = udp_scan(ip,int(i),int(timeout))
         print("UDP Scan Completed for {}:{}".format(ip, i))
-        outputtable.add_row([i, udp_scan_res])
+        udp_scan_port_scanner_output_table.add_row([i, udp_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nUDP Scan Result:".format(ip))
-    print(outputtable)
+    print(udp_scan_port_scanner_output_table)
 
-def all_methods_port_scanner(ip, ports, timeout):
-    outputtable = prettytable.PrettyTable(["Port", "TCP Connect Scan", "TCP Stealth Scan", "TCP ACK Scan", "TCP Window Scan", "XMAS Scan", "FIN Scan", "NULL Scan", "UDP Scan"])
+def all_methods_port_scanner(ip, port_list, timeout):
+    all_methods_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP Connect Scan", "TCP Stealth Scan", "TCP ACK Scan", "TCP Window Scan", "XMAS Scan", "FIN Scan", "NULL Scan", "UDP Scan"])
     #outputtable.align["Port No."] = "l"
     
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, ports))
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
     
-    for i in ports:        
+    for i in port_list:        
         print("\nStarting TCP Connect Scan for {}:{}...".format(ip, i))
         tcp_connect_scan_res = tcp_connect_scan(ip,int(i),int(timeout))
         print("TCP Connect Scan Completed for {}:{}".format(ip, i))
@@ -552,9 +565,9 @@ def all_methods_port_scanner(ip, ports, timeout):
         print("\nStarting UDP Scan for {}:{}...".format(ip, i))
         udp_scan_res = udp_scan(ip,int(i),int(timeout))
         print("UDP Scan Completed for {}:{}".format(ip, i))
-        outputtable.add_row([i, tcp_connect_scan_res, tcp_stealth_scan_res, tcp_ack_flag_scan_res, tcp_window_scan_res, xmas_scan_res, fin_scan_res, null_scan_res, udp_scan_res])
+        all_methods_port_scanner_output_table.add_row([i, tcp_connect_scan_res, tcp_stealth_scan_res, tcp_ack_flag_scan_res, tcp_window_scan_res, xmas_scan_res, fin_scan_res, null_scan_res, udp_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nResult:".format(ip))
-    print(outputtable)    
+    print(all_methods_port_scanner_output_table)    
 
 #End of Port Scanner
 
@@ -593,7 +606,7 @@ if __name__=="__main__":
 
     print("\nEnter 1 for Host Discovery\n      2 for Promiscuous Mode Detection\n      3 for ARP Spoofing Detection\n", end="")
     print("      4 for IP Spoof Detection\n      5 for DNS Spoofing Detection\n      6 for DHCP Starvation Detection\n", end="")
-    print("      7 for OS Detection\n      8 for Port Scanner\n")
+    print("      7 for Port Scanner\n")
     print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
     print(colored("menu", "blue", attrs=['bold']), end="")
     print(colored(") >", "green", attrs=['bold']), end=" ")
@@ -613,6 +626,8 @@ if __name__=="__main__":
         print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
         print(colored("menu->promiscuousmodedetection", "blue", attrs=['bold']), end="")
         print(colored(") >", "green", attrs=['bold']), end=" ")
+        countpromiscuoushost=0
+        countnotpromiscuoushost=0
         suboption=int(input())
         if(suboption==1):
             ip=input("\nEnter the Target IP Address (Default: 127.0.0.1): ")
@@ -662,8 +677,6 @@ if __name__=="__main__":
         dhcpdict={}
         dhcpstarvationdetect(interface)
     elif(featureselection==7):
-        print("\nUpcoming...")
-    elif(featureselection==8):
         ip=input("\nEnter the Target IP Address: ")
         port=input("\nEnter the Port(s) to Scan: ")        
         try:
@@ -675,26 +688,26 @@ if __name__=="__main__":
         except ValueError:
             verbose=0
         conf.verb=verbose
-        ports=[]
+        port_list=[]
         if "," in port:
             port=port.split(",")
             port.sort()
-            ports+=port
+            port_list+=port
         elif "-" in port:
             port=port.split("-")
             port.sort()
             portlow=int(port[0])
             porthigh=int(port[1])
             portrange=range(portlow, porthigh)
-            ports+=portrange
+            port_list+=portrange
         else:
-            ports.append(port)
-        ports = list(set(ports))
-        new_ports=[]
-        for item in ports:
-                new_ports.append(int(item))
-        ports = new_ports
-        ports.sort()
+            port_list.append(port)
+        port_list=list(set(port_list))
+        temp_ports=[]
+        for item in port_list:
+                temp_ports.append(int(item))
+        port_list = temp_ports
+        port_list.sort()
         print("\nEnter 1 for TCP Connect Scan\n      2 for TCP Stealth Scan\n      3 for TCP ACK Scan\n      4 for TCP Window Scan", end="")
         print("\n      5 for XMAS Scan\n      6 for FIN Scan\n      7 for NULL Scan\n      8 for UDP Scan\n      9 for All of the Above Scans (Default Option)\n")
         print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
@@ -705,23 +718,23 @@ if __name__=="__main__":
         except ValueError:
             portscannerchoice=9
         if(portscannerchoice==1):
-            tcp_connect_scan_port_scanner(ip, ports, timeout)
+            tcp_connect_scan_port_scanner(ip, port_list, timeout)
         elif(portscannerchoice==2):
-            tcp_stealth_scan_port_scanner(ip, ports, timeout)
+            tcp_stealth_scan_port_scanner(ip, port_list, timeout)
         elif(portscannerchoice==3):
-            tcp_ack_scan_port_scanner(ip, ports, timeout)
+            tcp_ack_scan_port_scanner(ip, port_list, timeout)
         elif(portscannerchoice==4):
-            tcp_window_scan_port_scanner(ip, ports, timeout)
+            tcp_window_scan_port_scanner(ip, port_list, timeout)
         elif(portscannerchoice==5):
-            xmas_scan_port_scanner(ip, ports, timeout)
+            xmas_scan_port_scanner(ip, port_list, timeout)
         elif(portscannerchoice==6):
-            fin_scan_port_scanner(ip, ports, timeout)
+            fin_scan_port_scanner(ip, port_list, timeout)
         elif(portscannerchoice==7):
-            null_scan_port_scanner(ip, ports, timeout)
+            null_scan_port_scanner(ip, port_list, timeout)
         elif(portscannerchoice==8):
-            udp_scan_port_scanner(ip, ports, timeout)
+            udp_scan_port_scanner(ip, port_list, timeout)
         elif(portscannerchoice==9):
-            all_methods_port_scanner(ip, ports, timeout)
+            all_methods_port_scanner(ip, port_list, timeout)
     exitprocess()
 
 #End of main Function
