@@ -1,7 +1,9 @@
+import aiohttp
 import argparse
 import datetime
-from getmac import get_mac_address
+#from getmac import get_mac_address
 import ipaddress
+from mac_vendor_lookup import MacLookup
 import nmap
 import os
 import prettytable
@@ -20,20 +22,25 @@ def hostdiscoveryscannerusingnmap():
     print("\nScanning Please Wait...")
     print("(Note: This may take some time)")
     counthost=0
-    print()
     nm=nmap.PortScanner()
     nm.scan(hosts=network, arguments='-sn')
     host_list=list(nm.all_hosts())
     #host_list=sorted(ipaddress.ip_address(ipaddr) for ipaddr in host_list)
     host_list=sorted(host_list, key=ipaddress.IPv4Address)
-    host_discovery_using_nmap_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address"])
+    host_discovery_using_nmap_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Vendor", "Type of Response"])
     for host in host_list:
         counthost+=1
         try:
             macaddress=nm[host]['addresses']['mac']
         except:
-            macaddress="Might be a local interface / Not running as a super user / Error in getting it..."
-        host_discovery_using_nmap_output_table.add_row([counthost, host, macaddress])
+            macaddress="Might be a local interface /\nNot running as a super user /\nError in getting it..."
+        try:
+            manufacturer=nm[host]['vendor']
+            vendor=manufacturer[macaddress]
+        except:
+            vendor="Might be a local interface /\nNot running as a super user /\nError in getting it..."
+        type_of_response=nm[host]['status']['reason']
+        host_discovery_using_nmap_output_table.add_row([counthost, host, macaddress, vendor, type_of_response])
     print("\nHost Discovery Using Nmap Result:")
     print(host_discovery_using_nmap_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
@@ -50,11 +57,13 @@ def hostdiscoveryscannerusingscapy():
     result=srp(a,timeout=3,verbose=False)[0]
     counthost=0
     print()
-    host_discovery_using_scapy_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address"])
+    host_discovery_using_scapy_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Vendor"])
     for element in result:
         #print("IP Address: {} MAC Address: {}".format(element[1].psrc, element[1].hwsrc))
         counthost+=1
-        host_discovery_using_scapy_output_table.add_row([counthost, element[1].psrc, element[1].hwsrc])
+        print(element)
+        vendor=MacLookup().lookup(element[1].hwsrc)
+        host_discovery_using_scapy_output_table.add_row([counthost, element[1].psrc, element[1].hwsrc, vendor])
     print("\nHost Discovery Using Scapy Result:")
     print(host_discovery_using_scapy_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
@@ -604,6 +613,20 @@ if __name__=="__main__":
 
     #End of Banner
 
+    mac_address_update_choice=input("\nDo you want to update the MAC Address Registry? This step requires Internet Connectivity. Proceed (Y/N) (Default: N)? ")
+    if len(mac_address_update_choice)==0:
+        mac_address_update_choice='N'
+    else:
+        if(mac_address_update_choice.upper()=='Y'):
+            print("\nMAC Address Registry Updation is in Progress. This may take some time depending upon the speed of your Internet Connectivity...")
+            try:
+                MacLookup().update_vendors()
+            except aiohttp.client_exceptions.ClientConnectorError:
+                print("\nCannot connect to the Internet at the moment...\nSkipping this step...")
+        elif(mac_address_update_choice=='N'):
+            print("\nSkipping this step...")
+        else:
+            print("\nInvalid Input! Skipping this step...")
     print("\nEnter 1 for Host Discovery\n      2 for Promiscuous Mode Detection\n      3 for ARP Spoofing Detection\n", end="")
     print("      4 for IP Spoof Detection\n      5 for DNS Spoofing Detection\n      6 for DHCP Starvation Detection\n", end="")
     print("      7 for Port Scanner\n")
