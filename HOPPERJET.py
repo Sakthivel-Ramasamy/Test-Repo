@@ -1,9 +1,6 @@
-import aiohttp
 import argparse
 import datetime
-#from getmac import get_mac_address
 import ipaddress
-from mac_vendor_lookup import MacLookup
 import nmap
 import os
 import prettytable
@@ -27,7 +24,7 @@ def hostdiscoveryscannerusingnmap():
     host_list=list(nm.all_hosts())
     #host_list=sorted(ipaddress.ip_address(ipaddr) for ipaddr in host_list)
     host_list=sorted(host_list, key=ipaddress.IPv4Address)
-    host_discovery_using_nmap_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Vendor", "Type of Response"])
+    host_discovery_using_nmap_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Vendor"])
     for host in host_list:
         counthost+=1
         try:
@@ -39,8 +36,8 @@ def hostdiscoveryscannerusingnmap():
             vendor=manufacturer[macaddress]
         except:
             vendor="Might be a local interface /\nNot running as a super user /\nError in getting it..."
-        type_of_response=nm[host]['status']['reason']
-        host_discovery_using_nmap_output_table.add_row([counthost, host, macaddress, vendor, type_of_response])
+        #type_of_response=nm[host]['status']['reason']
+        host_discovery_using_nmap_output_table.add_row([counthost, host, macaddress, vendor])
     print("\nHost Discovery Using Nmap Result:")
     print(host_discovery_using_nmap_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
@@ -61,8 +58,13 @@ def hostdiscoveryscannerusingscapy():
     for element in result:
         #print("IP Address: {} MAC Address: {}".format(element[1].psrc, element[1].hwsrc))
         counthost+=1
-        print(element)
-        vendor=MacLookup().lookup(element[1].hwsrc)
+        macaddress=element[1].hwsrc
+        macaddress=macaddress.replace(":", "").replace("-", "").replace(".","").upper()
+        macaddress_file_contents=open("nmap-mac-prefixes", "r").read()
+        for macaddr in macaddress_file_contents.split("\n"):
+            if macaddr[0:6] == macaddress[0:6]:
+                vendor=macaddr[7:].strip()
+                break
         host_discovery_using_scapy_output_table.add_row([counthost, element[1].psrc, element[1].hwsrc, vendor])
     print("\nHost Discovery Using Scapy Result:")
     print(host_discovery_using_scapy_output_table)
@@ -72,33 +74,33 @@ def hostdiscoveryscannerusingscapy():
 
 #Start of Promiscuous Mode Detection Scanner
 
-def pro_mac(ip):
+def promiscuous_mac(ip):
     a=Ether(dst="FF:FF:FF:FF:FF:FE")/ARP(pdst=ip)
     result = srp(a,timeout=3,verbose=False)[0]
     return result[0][1].hwsrc
     
-def pro_start(ip):
+def promiscuousdevicescanusingipaddress(ip):
+    counthost=1
     global countpromiscuoushost
     global countnotpromiscuoushost
+    promiscuous_mode_detection_using_ip_address_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Status"])
+    macaddress="NA"
     try:
-        result=pro_mac(ip)
+        result=promiscuous_mac(ip)
         countpromiscuoushost+=1
-        print(colored("The ip {}".format(ip) + " is in promiscuous mode", "white", "on_red", attrs=['bold']))
+        #print(colored("The ip {}".format(ip) + " is in promiscuous mode", "white", "on_red", attrs=['bold']))
+        status="Promiscuous Mode Suspected"
     except:
         countnotpromiscuoushost+=1
-        print(colored("The ip {}".format(ip) + " is not in promiscuous mode", "white", "on_green", attrs=['bold']))        
+        #print(colored("The ip {}".format(ip) + " is not in promiscuous mode", "white", "on_green", attrs=['bold']))
+        status="No Promiscuous Mode Suspected"
+    promiscuous_mode_detection_using_ip_address_output_table.add_row([counthost, ip, macaddress, status])
+    print("\nPromiscuous Mode Detection Using IP Address Result:")
+    print(promiscuous_mode_detection_using_ip_address_output_table)
 
-def promiscuousdevicescannerusingnmap():
-    ip=input("\nEnter the IP in CIDR Notation (Default: 192.168.1.0/24): ")
-    if len(ip)==0:
-        network='192.168.1.0/24'
-    else:
-        network=ip
-    print("\nScanning Please Wait...")
-    print("(Note: This may take some time)")
+def promiscuousdevicescannerusingnmap(network):
     nm=nmap.PortScanner()
     nm.scan(hosts=network, arguments='-sn')
-    #host_list=[(x, nm[x]['status']['state']) for x in nm.all_hosts()]
     host_list=list(nm.all_hosts())
     #host_list=sorted(ipaddress.ip_address(ipaddr) for ipaddr in host_list)
     host_list=sorted(host_list, key=ipaddress.IPv4Address)
@@ -107,22 +109,30 @@ def promiscuousdevicescannerusingnmap():
     global countnotpromiscuoushost
     countpromiscuoushost=0
     countnotpromiscuoushost=0
+    promiscuous_mode_detection_using_nmap_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Status"])
     for host in host_list:
-        mac=get_mac_address(ip=host)
         counthost+=1
-        print("\nIP Address: {} MAC Address: {}".format(host, mac))
-        pro_start(host)
+        ip=host
+        try:
+            macaddress=nm[host]['addresses']['mac']
+        except:
+            macaddress="Might be a local interface /\nNot running as a super user /\nError in getting it..."
+        try:
+            result=promiscuous_mac(ip)
+            countpromiscuoushost+=1
+            #print(colored("The ip {}".format(ip) + " is in promiscuous mode", "white", "on_red", attrs=['bold']))
+            status="Promiscuous Mode Suspected"
+        except:
+            countnotpromiscuoushost+=1
+            #print(colored("The ip {}".format(ip) + " is not in promiscuous mode", "white", "on_green", attrs=['bold']))
+            status="No Promiscuous Mode Suspected"
+        promiscuous_mode_detection_using_nmap_output_table.add_row([counthost, ip, macaddress, status])
+    print("\nPromiscuous Mode Detection Using Nmap Results:")
+    print(promiscuous_mode_detection_using_nmap_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
     print("Number of Hosts in Promisucous Mode = {}\nNumber of Hosts not in Promisucous Mode = {}".format(countpromiscuoushost, countnotpromiscuoushost))
 
-def promiscuousdevicescannerusingscapy():
-    ip=input("\nEnter the IP in CIDR Notation (Default: 192.168.1.0/24): ")
-    if len(ip)==0:
-        network='192.168.1.0/24'
-    else:
-        network=ip
-    print("\nScanning Please Wait...")
-    print("(Note: This may take negligible time)")
+def promiscuousdevicescannerusingscapy(network):
     a=Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.0/24")
     result=srp(a,timeout=3,verbose=False)[0]
     counthost=0
@@ -130,10 +140,24 @@ def promiscuousdevicescannerusingscapy():
     global countnotpromiscuoushost
     countpromiscuoushost=0
     countnotpromiscuoushost=0
+    promiscuous_mode_detection_using_scapy_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Status"])
     for element in result:        
         counthost+=1
-        print("\nIP Address: {} MAC Address: {}".format(element[1].psrc, element[1].hwsrc))
-        pro_start(element[1].psrc)
+        ip=element[1].psrc
+        macaddress=element[1].hwsrc
+        #print("\nIP Address: {} MAC Address: {}".format(element[1].psrc, element[1].hwsrc))
+        try:
+            result=promiscuous_mac(ip)
+            countpromiscuoushost+=1
+            #print(colored("The ip {}".format(ip) + " is in promiscuous mode", "white", "on_red", attrs=['bold']))
+            status="Promiscuous Mode Suspected"
+        except:
+            countnotpromiscuoushost+=1
+            #print(colored("The ip {}".format(ip) + " is not in promiscuous mode", "white", "on_green", attrs=['bold']))
+            status="No Promiscuous Mode Suspected"
+        promiscuous_mode_detection_using_scapy_output_table.add_row([counthost, ip, macaddress, status])
+    print("\nPromiscuous Mode Detection Using Scapy Results:")
+    print(promiscuous_mode_detection_using_scapy_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
     print("Number of Hosts in Promisucous Mode = {}\nNumber of Hosts not in Promisucous Mode = {}".format(countpromiscuoushost, countnotpromiscuoushost))
 
@@ -580,6 +604,37 @@ def all_methods_port_scanner(ip, port_list, timeout):
 
 #End of Port Scanner
 
+#Start of OS Detection Scanner
+
+def os_detection(ip):
+    try:
+        nm=nmap.PortScanner()
+        os_scan_values=nm.scan(ip, arguments='-O')['scan'][ip]['osmatch']
+        counthost=1
+        os_detection_output_table = prettytable.PrettyTable(["Number", "IP Address", "OS Vendor", "OS Family", "OS Generation", "OS Details", "OS Common Platform Enumeration (CPE) Details"])
+        os_vendor=os_scan_values[0]['osclass'][0]['vendor']
+        os_family=os_scan_values[0]['osclass'][0]['osfamily']
+        os_generation=""
+        for i in range(len(os_scan_values[0]['osclass'])-1):
+            os_generation+=str(os_scan_values[0]['osclass'][i]['osgen']) + " | "
+        os_generation+=str(os_scan_values[0]['osclass'][len(os_scan_values[0]['osclass'])-1]['osgen'])
+        os_details=os_scan_values[0]['name']
+        os_cpe=""
+        for i in range(len(os_scan_values[0]['osclass'])-1):
+            os_cpe+=str(os_scan_values[0]['osclass'][i]['cpe']) + " | "
+        os_cpe+=str(os_scan_values[0]['osclass'][len(os_scan_values[0]['osclass'])-1]['cpe'])
+        os_detection_output_table.add_row([counthost, ip, os_vendor, os_family, os_generation, os_details, os_cpe])
+        print("\nOS Detection Results:")
+        print(os_detection_output_table)
+    except IndexError:
+        print("\nSome Error Occurred...\Either the Target IP Address is filtering the connections or Not able to handle the response...\nPlease try again later...")
+        exitprocess()
+    except KeyError:
+        print("\nSome Error Occurred...\nEither the Target IP Address is not active or Not able to reach the Target IP Address.\nPlease try again later...")
+        exitprocess()
+
+#End of OS Detection Scanner
+
 #Start of Exit Process
 
 def exitprocess():
@@ -613,23 +668,9 @@ if __name__=="__main__":
 
     #End of Banner
 
-    mac_address_update_choice=input("\nDo you want to update the MAC Address Registry? This step requires Internet Connectivity. Proceed (Y/N) (Default: N)? ")
-    if len(mac_address_update_choice)==0:
-        mac_address_update_choice='N'
-    else:
-        if(mac_address_update_choice.upper()=='Y'):
-            print("\nMAC Address Registry Updation is in Progress. This may take some time depending upon the speed of your Internet Connectivity...")
-            try:
-                MacLookup().update_vendors()
-            except aiohttp.client_exceptions.ClientConnectorError:
-                print("\nCannot connect to the Internet at the moment...\nSkipping this step...")
-        elif(mac_address_update_choice=='N'):
-            print("\nSkipping this step...")
-        else:
-            print("\nInvalid Input! Skipping this step...")
     print("\nEnter 1 for Host Discovery\n      2 for Promiscuous Mode Detection\n      3 for ARP Spoofing Detection\n", end="")
     print("      4 for IP Spoof Detection\n      5 for DNS Spoofing Detection\n      6 for DHCP Starvation Detection\n", end="")
-    print("      7 for Port Scanner\n")
+    print("      7 for Port Scanner\n      8 for OS Detection\n")
     print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
     print(colored("menu", "blue", attrs=['bold']), end="")
     print(colored(") >", "green", attrs=['bold']), end=" ")
@@ -653,12 +694,17 @@ if __name__=="__main__":
         countnotpromiscuoushost=0
         suboption=int(input())
         if(suboption==1):
-            ip=input("\nEnter the Target IP Address (Default: 127.0.0.1): ")
-            if len(ip)==0:
-                ipaddress='127.0.0.1'
-            else:
-                ipaddress=ip
-            pro_start(ipaddress)
+            try:
+                ipaddr=input("\nEnter the Target IP Address (Default: 127.0.0.1): ")
+                if len(ipaddr)==0:
+                    ip='127.0.0.1'
+                else:
+                    ip=ipaddr
+                ipaddress.ip_address(ip)
+                promiscuousdevicescanusingipaddress(ip)
+            except ValueError:
+                    print("\nInvalid IP Address Entered...")
+                    exitprocess()
         elif(suboption==2):
             print("\nEnter 1 to scan using Nmap (Speed of Scan: Moderate)\n      2 to scan using Scapy (Speed of Scan: Fast)\n")
             print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
@@ -666,9 +712,29 @@ if __name__=="__main__":
             print(colored(") >", "green", attrs=['bold']), end=" ")
             choice=int(input())
             if(choice==1):
-                promiscuousdevicescannerusingnmap()
+                try:
+                    network=input("\nEnter the IP in CIDR Notation (Default: 192.168.1.0/24): ")
+                    if len(network)==0:
+                        network='192.168.1.0/24'
+                    ipaddress.ip_network(network)
+                    print("\nScanning Please Wait...")
+                    print("(Note: This may take some time)")
+                    promiscuousdevicescannerusingnmap(network)
+                except ValueError:
+                    print("\nInvalid IP CIDR Address Entered...")
+                    exitprocess()
             elif(choice==2):
-                promiscuousdevicescannerusingscapy()
+                try:
+                    network=input("\nEnter the IP in CIDR Notation (Default: 192.168.1.0/24): ")
+                    if len(network)==0:
+                        network='192.168.1.0/24'
+                    ipaddress.ip_network(network)
+                    print("\nScanning Please Wait...")
+                    print("(Note: This may take negligible time)")
+                    promiscuousdevicescannerusingscapy(network)
+                except ValueError:
+                    print("\nInvalid IP CIDR Address Entered...")
+                    exitprocess()
     elif(featureselection==3):
         interface=input("\nEnter the Interface of the Host (Default: eth0): ")
         if len(interface)==0:
@@ -700,8 +766,21 @@ if __name__=="__main__":
         dhcpdict={}
         dhcpstarvationdetect(interface)
     elif(featureselection==7):
-        ip=input("\nEnter the Target IP Address: ")
-        port=input("\nEnter the Port(s) to Scan: ")        
+        try:
+            ipaddr=input("\nEnter the Target IP Address (Default: 127.0.0.1): ")
+            if len(ipaddr)==0:
+                ip='127.0.0.1'
+            else:
+                ip=ipaddr
+            ipaddress.ip_address(ip)
+        except ValueError:
+            print("\nInvalid IP Address Entered...")
+            exitprocess()
+        try:
+            port=input("\nEnter the Port(s) to Scan: ")
+        except ValueError:
+            print("\nNo Ports Entered...")
+            exitprocess()
         try:
             timeout=int(input("\nEnter the Timeout Duration (Default: 2): "))
         except ValueError:
@@ -758,6 +837,18 @@ if __name__=="__main__":
             udp_scan_port_scanner(ip, port_list, timeout)
         elif(portscannerchoice==9):
             all_methods_port_scanner(ip, port_list, timeout)
+    elif(featureselection==8):
+        try:
+            ipaddr=input("\nEnter the Target IP Address (Default: 127.0.0.1): ")
+            if len(ipaddr)==0:
+                ip='127.0.0.1'
+            else:
+                ip=ipaddr
+            ipaddress.ip_address(ip)
+            os_detection(ip)
+        except ValueError:
+            print("\nInvalid IP Address Entered...")
+            exitprocess()
     exitprocess()
 
 #End of main Function
