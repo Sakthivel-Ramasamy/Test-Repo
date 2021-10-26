@@ -10,7 +10,7 @@ from termcolor import colored
 
 #Start of Host Discovery Scanner
 
-def hostdiscoveryscannerusingnmap():
+def host_discovery_scanner_using_nmap():
     ip=input("\nEnter the IP in CIDR Notation (Default: 192.168.1.0/24): ")
     if len(ip)==0:
         network='192.168.1.0/24'
@@ -42,7 +42,7 @@ def hostdiscoveryscannerusingnmap():
     print(host_discovery_using_nmap_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
 
-def hostdiscoveryscannerusingscapy():
+def host_discovery_scanner_using_scapy():
     ip=input("\nEnter the IP in CIDR Notation (Default: 192.168.1.0/24): ")
     if len(ip)==0:
         network='192.168.1.0/24'
@@ -74,19 +74,19 @@ def hostdiscoveryscannerusingscapy():
 
 #Start of Promiscuous Mode Detection Scanner
 
-def promiscuous_mac(ip):
+def promiscuous_response_identifier(ip):
     a=Ether(dst="FF:FF:FF:FF:FF:FE")/ARP(pdst=ip)
     result = srp(a,timeout=3,verbose=False)[0]
     return result[0][1].hwsrc
     
-def promiscuousdevicescanusingipaddress(ip):
+def promiscuous_device_scanner_using_ip_address(ip):
     counthost=1
     global countpromiscuoushost
     global countnotpromiscuoushost
     promiscuous_mode_detection_using_ip_address_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Status"])
     macaddress="NA"
     try:
-        result=promiscuous_mac(ip)
+        result=promiscuous_response_identifier(ip)
         countpromiscuoushost+=1
         #print(colored("The ip {}".format(ip) + " is in promiscuous mode", "white", "on_red", attrs=['bold']))
         status="Promiscuous Mode Suspected"
@@ -98,7 +98,7 @@ def promiscuousdevicescanusingipaddress(ip):
     print("\nPromiscuous Mode Detection Using IP Address Result:")
     print(promiscuous_mode_detection_using_ip_address_output_table)
 
-def promiscuousdevicescannerusingnmap(network):
+def promiscuous_devices_scanner_using_nmap(network):
     nm=nmap.PortScanner()
     nm.scan(hosts=network, arguments='-sn')
     host_list=list(nm.all_hosts())
@@ -118,7 +118,7 @@ def promiscuousdevicescannerusingnmap(network):
         except:
             macaddress="Might be a local interface /\nNot running as a super user /\nError in getting it..."
         try:
-            result=promiscuous_mac(ip)
+            result=promiscuous_response_identifier(ip)
             countpromiscuoushost+=1
             #print(colored("The ip {}".format(ip) + " is in promiscuous mode", "white", "on_red", attrs=['bold']))
             status="Promiscuous Mode Suspected"
@@ -132,7 +132,7 @@ def promiscuousdevicescannerusingnmap(network):
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
     print("Number of Hosts in Promisucous Mode = {}\nNumber of Hosts not in Promisucous Mode = {}".format(countpromiscuoushost, countnotpromiscuoushost))
 
-def promiscuousdevicescannerusingscapy(network):
+def promiscuous_devices_scanner_using_scapy(network):
     a=Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.0/24")
     result=srp(a,timeout=3,verbose=False)[0]
     counthost=0
@@ -147,7 +147,7 @@ def promiscuousdevicescannerusingscapy(network):
         macaddress=element[1].hwsrc
         #print("\nIP Address: {} MAC Address: {}".format(element[1].psrc, element[1].hwsrc))
         try:
-            result=promiscuous_mac(ip)
+            result=promiscuous_response_identifier(ip)
             countpromiscuoushost+=1
             #print(colored("The ip {}".format(ip) + " is in promiscuous mode", "white", "on_red", attrs=['bold']))
             status="Promiscuous Mode Suspected"
@@ -167,23 +167,23 @@ def promiscuousdevicescannerusingscapy(network):
 
 #arpcount=0
 
-def danger(a):
-    print(colored(("\nYou are under attack REAL-MAC: "+str(a[0])+" FACE MAC:"+str(a[1])), "white", "on_red", attrs=['bold']))
-    exitprocess()
-    
 #function if no spoofing is taking place 
-def safe():
+def arp_spoof_safe():
     print(colored("\nYou are safe", "white", "on_green", attrs=['bold']))
-    exitprocess()
+    exit_process()
+
+def arp_spoof_not_safe(a):
+    print(colored(("\nYou are under attack REAL-MAC: "+str(a[0])+" FACE MAC:"+str(a[1])), "white", "on_red", attrs=['bold']))
+    exit_process()
 
 #function getting mac addrees by broadcasting the ARP msg packets 
-def get_macarp(ip):
+def arp_sppof_mac_identifier(ip):
     p = Ether(dst="FF:FF:FF:FF:FF:FF")/ARP(pdst=ip) 
     result = srp(p, timeout=3, verbose=False)[0] 
     return result[0][1].hwsrc
 
 #process for every packet received by sniff function 
-def arpspoofdetectprocess(packet): 
+def arp_spoof_identifier(packet): 
     #print("process")
     # if the packet is an ARP packet 
     global arpcount
@@ -191,7 +191,7 @@ def arpspoofdetectprocess(packet):
         a=[]	 
         try: 
             # get the real MAC address of the sender 
-            real_mac = get_macarp(packet[ARP].psrc) 
+            real_mac = arp_sppof_mac_identifier(packet[ARP].psrc) 
             #print(real_mac) 
             # get the MAC address from the packet sent to us 
             response_mac = packet[ARP].hwsrc 
@@ -201,19 +201,19 @@ def arpspoofdetectprocess(packet):
                 #print(f"[!] You are under attack, REAL-MAC: {real_mac.upper()}, FAKE-MAC: {response_mac.upper()}") 
                 a.append(real_mac) 
                 a.append(response_mac)  
-                return danger(a) 
+                return arp_spoof_not_safe(a) 
             else: 
                 arpcount=arpcount+1 
             if arpcount == 40:
                 arpcount=0
-                return safe() 
+                return arp_spoof_safe() 
         except IndexError:            	 
             # unable to find the real mac 
             # may be a fake IP or firewall is blocking packets 
             pass
 
-def arpspoofcheck(interface):
-    sniff(store=False,prn=arpspoofdetectprocess,iface=interface)
+def arp_spoof_detector(interface):
+    sniff(prn=arp_spoof_identifier, iface=interface, store=False)
 
 #End of ARP Spoofing Detection Scanner
 
@@ -223,18 +223,8 @@ def arpspoofcheck(interface):
 # Threshold for maximum difference in TTL values
 #threshold=int(input("\nEnter the Threshold Value: "))
 
-# Parses packets received and passes source IP 
-def get_ttl(pkt):
-	try:
-		if pkt.haslayer(IP):
-			src = pkt.getlayer(IP).src
-			ttl = pkt.getlayer(IP).ttl
-			check_ttl(src, ttl)
-	except:
-		pass
-
 # Checks if the TTL is within the maximum threshold
-def check_ttl(src, ttl):
+def ip_spoof_ttl_checker(src, ttl):
     global ttl_values
     global threshold
     if not src in ttl_values:
@@ -244,18 +234,35 @@ def check_ttl(src, ttl):
         print(f"[!] Detected possible spoofed packet from [{src}]")
         print(f"[!] Received TTL: {ttl}, Actual TTL: {ttl_values[src]}")
 
+# Parses packets received and passes source IP 
+def ip_spoof_identifier(pkt):
+	try:
+		if pkt.haslayer(IP):
+			src = pkt.getlayer(IP).src
+			ttl = pkt.getlayer(IP).ttl
+			ip_spoof_ttl_checker(src, ttl)
+	except:
+		pass
+
 # Sniffs traffic on the specified interface. 
 # Grabs the src IP and TTL from the network traffic then compares the TTL with an ICMP echo reply. 
 # If the difference in TTL is greater than THRESHOLD a warning will be printed.
-def ipspoofcheck(interface):
+def ip_spoof_detector(interface):
 	print(f"\n[*] Sniffing traffic on interface [{interface}]")
-	sniff(prn=get_ttl, iface=interface, store=False)
+	sniff(prn=ip_spoof_identifier, iface=interface, store=False)
 
 #End of IP Spoofing Detection Scanner
 
 #Start of DNS Spoofing Detection Scanner
 
-def dnsDetect(packet):
+def dns_spoof_ip_identifier(packet):
+    ipAdds = []
+    ancount = packet[DNS].ancount
+    for index in range(ancount):
+        ipAdds.append(packet[DNSRR][index].rdata)
+    return ipAdds
+
+def dns_spoof_identifier(packet):
     if DNS in packet and packet[DNS].qr == 1 and packet[DNS].ancount >= 1:
         global dnsMap
         if packet[DNS].id not in dnsMap:
@@ -266,8 +273,8 @@ def dnsDetect(packet):
             # Will have to check if this is correct
             macAddr2 = packet[Ether].src
             firstPacket = dnsMap[packet[DNS].id]
-            ipAdds = getIPsFromDNS(packet)
-            ipAdds2= getIPsFromDNS(firstPacket)
+            ipAdds = dns_spoof_ip_identifier(packet)
+            ipAdds2= dns_spoof_ip_identifier(firstPacket)
             #check if the MAC address is same. if not raise an alarm
             if macAddr2 != firstPacket[Ether].src:
                 print()                
@@ -284,40 +291,21 @@ def dnsDetect(packet):
                 #print('Answer 1 ',str(ipAdds2))
                 #print('Answer 2 ',str(ipAdds))
 
-def getIPsFromDNS(packet):
-    ipAdds = []
-    ancount = packet[DNS].ancount
-    for index in range(ancount):
-        ipAdds.append(packet[DNSRR][index].rdata)
-    return ipAdds
-
-def dnsspoofcheck(interface):
+def dns_spoof_detector(interface):
     argParser = argparse.ArgumentParser(add_help=False)
     argParser.add_argument('fExp', nargs='*', default=None)
     args = argParser.parse_args()
     filterExp = ''
     if args.fExp is None:
         filterExp = 'port 53'
-    sniff(iface=interface, filter=filterExp, prn=dnsDetect)
+    sniff(prn=dns_spoof_identifier, iface=interface, filter=filterExp)
 
 #End of DNS Spoofing Detection Scanner
 
 #Start of DHCP Starvation Detection Scanner
 
-def handle_dhcp(packet):
-    global dhcpcount, dhcpdict
-    newtime = (str(datetime.now()).split(" ")[1])
-    newmac = packet.src
-    if DHCP in packet and packet[DHCP].options[0][1] == 1:  # DHCP DISCOVER PACKET
-        dhcpcount += 1
-        for time, mac in dhcpdict.items():
-            if mac != newmac and dhcpcount > 1012:
-                val = hand_washer(time, newtime, newmac)
-                if val == 0:
-                    exitprocess()
-    dhcpdict[newtime] = newmac
-
-def hand_washer(time, newtime, newmac):
+def dhcp_starvation_time_checker(time, newtime):
+    global dhcp_starvation_timeout
     hour1 = time.split(":")[0]
     hour2 = newtime.split(":")[0]
     min1 = time.split(":")[1]
@@ -325,17 +313,33 @@ def hand_washer(time, newtime, newmac):
 
     # If the time is the same I don't need to check the milliseconds
     # If the hour is the same but not the minutes and there are in range of 10 mins send the frame
-    if (time == newtime) or ((hour1 == hour2) and (int(min2) - int(min1) in range(10))):
-        send_frame(time, newtime, newmac)
+    if (time == newtime) or ((hour1 == hour2) and (int(min2) - int(min1) in range(dhcp_starvation_timeout))):
+        print(colored(("\nDHCP Count = "+ str(dhcpcount) + "\nWARNING: Possible DHCP Starvation Attack Detected"), "white", "on_red", attrs=['bold']))
         return 0    
     else:
         return 1
 
-def send_frame(time, newtime, newmac):
-    print(colored(("\nDHCP Count = "+ str(dhcpcount) + "\nWARNING: Possible DHCP Starvation Attack Detected"), "white", "on_red", attrs=['bold']))
+def dhcp_starvation_identifier(packet):
+    global dhcpcount, dhcpdict, dhcp_starvation_timeout, dhcp_starvation_threshold, starttime
+    newtime = (str(datetime.now()).split(" ")[1])
+    newmac = packet.src
+    if DHCP in packet and packet[DHCP].options[0][1] == 1:  # DHCP DISCOVER PACKET
+        dhcpcount += 1
+        for time, mac in dhcpdict.items():
+            if mac != newmac and dhcpcount > dhcp_starvation_threshold:
+                val = dhcp_starvation_time_checker(time, newtime)
+                if val == 0:
+                    dhcpcount=0
+                    starttime=datetime.now()
+                    exit_process()
+    dhcpdict[newtime] = newmac
+    stoptime=datetime.now()
+    if(abs(stoptime-starttime).total_seconds()>=dhcp_starvation_timeout):
+        dhcpcount=0
+        starttime=stoptime
 
-def dhcpstarvationdetect(interface):
-    sniff(iface=interface, filter='udp and (port 67 or port 68)', prn=handle_dhcp, store=0)
+def dhcp_starvation_detector(interface):
+    sniff( prn=dhcp_starvation_identifier, iface=interface, filter='udp and (port 67 or port 68)', store=0)
 
 #End of DHCP Starvation Detection Scanner
 
@@ -606,7 +610,7 @@ def all_methods_port_scanner(ip, port_list, timeout):
 
 #Start of OS Detection Scanner
 
-def os_detection(ip):
+def os_detector(ip):
     try:
         nm=nmap.PortScanner()
         os_scan_values=nm.scan(ip, arguments='-O')['scan'][ip]['osmatch']
@@ -628,16 +632,16 @@ def os_detection(ip):
         print(os_detection_output_table)
     except IndexError:
         print("\nSome Error Occurred...\Either the Target IP Address is filtering the connections or Not able to handle the response...\nPlease try again later...")
-        exitprocess()
+        exit_process()
     except KeyError:
         print("\nSome Error Occurred...\nEither the Target IP Address is not active or Not able to reach the Target IP Address.\nPlease try again later...")
-        exitprocess()
+        exit_process()
 
 #End of OS Detection Scanner
 
 #Start of Exit Process
 
-def exitprocess():
+def exit_process():
     sys.exit()
 
 #End of Exit Process
@@ -682,9 +686,9 @@ if __name__=="__main__":
         print(colored(") >", "green", attrs=['bold']), end=" ")
         choice=int(input())
         if(choice==1):
-            hostdiscoveryscannerusingnmap()
+            host_discovery_scanner_using_nmap()
         elif(choice==2):
-            hostdiscoveryscannerusingscapy()
+            host_discovery_scanner_using_scapy()
     elif(featureselection==2):
         print("\nEnter 1 for Individual IPScan\n      2 for Subnet Scan\n")
         print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
@@ -701,10 +705,10 @@ if __name__=="__main__":
                 else:
                     ip=ipaddr
                 ipaddress.ip_address(ip)
-                promiscuousdevicescanusingipaddress(ip)
+                promiscuous_device_scanner_using_ip_address(ip)
             except ValueError:
                     print("\nInvalid IP Address Entered...")
-                    exitprocess()
+                    exit_process()
         elif(suboption==2):
             print("\nEnter 1 to scan using Nmap (Speed of Scan: Moderate)\n      2 to scan using Scapy (Speed of Scan: Fast)\n")
             print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
@@ -719,10 +723,10 @@ if __name__=="__main__":
                     ipaddress.ip_network(network)
                     print("\nScanning Please Wait...")
                     print("(Note: This may take some time)")
-                    promiscuousdevicescannerusingnmap(network)
+                    promiscuous_devices_scanner_using_nmap(network)
                 except ValueError:
                     print("\nInvalid IP CIDR Address Entered...")
-                    exitprocess()
+                    exit_process()
             elif(choice==2):
                 try:
                     network=input("\nEnter the IP in CIDR Notation (Default: 192.168.1.0/24): ")
@@ -731,16 +735,16 @@ if __name__=="__main__":
                     ipaddress.ip_network(network)
                     print("\nScanning Please Wait...")
                     print("(Note: This may take negligible time)")
-                    promiscuousdevicescannerusingscapy(network)
+                    promiscuous_devices_scanner_using_scapy(network)
                 except ValueError:
                     print("\nInvalid IP CIDR Address Entered...")
-                    exitprocess()
+                    exit_process()
     elif(featureselection==3):
         interface=input("\nEnter the Interface of the Host (Default: eth0): ")
         if len(interface)==0:
             interface='eth0'
         arpcount=0
-        arpspoofcheck(interface)
+        arp_spoof_detector(interface)
     elif(featureselection==4):
         interface=input("\nEnter the Interface of the Host (Default: eth0): ")
         if len(interface)==0:
@@ -751,20 +755,23 @@ if __name__=="__main__":
         except ValueError:
             threshold=5
         print("\nWarning: This may slow down your system and it may not respond as expected...")
-        ipspoofcheck(interface)
+        ip_spoof_detector(interface)
     elif(featureselection==5):
         interface=input("\nEnter the Interface of the Host (Default: eth0): ")
         if len(interface)==0:
             interface=conf.iface
         dnsMap={}
-        dnsspoofcheck(interface)
+        dns_spoof_detector(interface)
     elif(featureselection==6):
         interface=input("\nEnter the Interface of the Host (Default: eth0): ")
         if len(interface)==0:
             interface=conf.iface
         dhcpcount=0
         dhcpdict={}
-        dhcpstarvationdetect(interface)
+        dhcp_starvation_timeout=int(input("\nEnter the Timeout Duration in seconds: "))
+        dhcp_starvation_threshold=int(input("\nEnter the DHCP DISCOVER Message Threshlod Value: "))
+        starttime=datetime.now()
+        dhcp_starvation_detector(interface)
     elif(featureselection==7):
         try:
             ipaddr=input("\nEnter the Target IP Address (Default: 127.0.0.1): ")
@@ -775,12 +782,12 @@ if __name__=="__main__":
             ipaddress.ip_address(ip)
         except ValueError:
             print("\nInvalid IP Address Entered...")
-            exitprocess()
+            exit_process()
         try:
             port=input("\nEnter the Port(s) to Scan: ")
         except ValueError:
             print("\nNo Ports Entered...")
-            exitprocess()
+            exit_process()
         try:
             timeout=int(input("\nEnter the Timeout Duration (Default: 2): "))
         except ValueError:
@@ -845,10 +852,10 @@ if __name__=="__main__":
             else:
                 ip=ipaddr
             ipaddress.ip_address(ip)
-            os_detection(ip)
+            os_detector(ip)
         except ValueError:
             print("\nInvalid IP Address Entered...")
-            exitprocess()
-    exitprocess()
+            exit_process()
+    exit_process()
 
 #End of main Function
