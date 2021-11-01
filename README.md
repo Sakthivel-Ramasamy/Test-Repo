@@ -2,7 +2,7 @@
 DESCRIPTION!!!!
 
 ## HOW TO ACCESS
- - Click on the link to open the webiste  https://yayady1999.github.io/motion-background/
+ 
 - Once it opens , check the effects and see the png in motion.
 - Have Fun
 
