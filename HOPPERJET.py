@@ -667,7 +667,7 @@ if __name__=="__main__":
     print("*            Copyright of Sakthivel Ramasamy, Karthikeyan P, Yayady S                  *")
     print("*                                                                                      *")
     print("*                        https://github.com/Sakthivel-Ramasamy                         *")
-    print("*                                   2021                                               *")
+    print("*                                  © 2021                                              *")
     print("****************************************************************************************")
 
     #End of Banner
