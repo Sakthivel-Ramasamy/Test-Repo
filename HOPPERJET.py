@@ -664,15 +664,15 @@ if __name__=="__main__":
     print()
     print("****************************************************************************************")
     print("*                                                                                      *")
-    print("*            Copyright of Sakthivel Ramasamy, Karthikeyan P, Yayady S 2021             *")
+    print("*            Copyright of Sakthivel Ramasamy, Karthikeyan P, Yayady S                  *")
     print("*                                                                                      *")
     print("*                        https://github.com/Sakthivel-Ramasamy                         *")
-    print("*                                                                                      *")
+    print("*                                   2021                                               *")
     print("****************************************************************************************")
 
     #End of Banner
 
-    print("\nEnter 1 for Host Discovery\n      2 for Promiscuous Mode Detection\n      3 for ARP Spoofing Detection\n", end="")
+    print("\nEnter 1\n for Host Discovery\n      2 for Promiscuous Mode Detection\n      3 for ARP Spoofing Detection\n", end="")
     print("      4 for IP Spoof Detection\n      5 for DNS Spoofing Detection\n      6 for DHCP Starvation Detection\n", end="")
     print("      7 for Port Scanner\n      8 for OS Detection\n")
     print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
@@ -817,7 +817,8 @@ if __name__=="__main__":
                 temp_ports.append(int(item))
         port_list = temp_ports
         port_list.sort()
-        print("\nEnter 1 for TCP Connect Scan\n      2 for TCP Stealth Scan\n      3 for TCP ACK Scan\n      4 for TCP Window Scan", end="")
+        print("\n
+	1 for TCP Connect Scan\n      2 for TCP Stealth Scan\n      3 for TCP ACK Scan\n      4 for TCP Window Scan", end="")
         print("\n      5 for XMAS Scan\n      6 for FIN Scan\n      7 for NULL Scan\n      8 for UDP Scan\n      9 for All of the Above Scans (Default Option)\n")
         print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
         print(colored("hopperjetmenu->portscanner->selectmethod", "blue", attrs=['bold']), end="")
