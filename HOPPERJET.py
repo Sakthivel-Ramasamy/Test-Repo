@@ -1,3 +1,14 @@
+import pkg_resources
+import subprocess
+import sys
+
+installed_packages={pkg.key for pkg in pkg_resources.working_set}
+required_packages={'argparse', 'datetime', 'ipaddress', 'python-nmap', 'prettytable', 'scapy', 'termcolor'}
+missing_packages=required_packages-installed_packages
+if missing_packages:
+    python = sys.executable
+    subprocess.check_call([python, '-m', 'pip', 'install', *missing_packages], stdout=subprocess.DEVNULL)
+
 import argparse
 import datetime
 import ipaddress
@@ -649,7 +660,9 @@ def exit_process():
 #Start of main Function
     
 if __name__=="__main__":
-    os.system('color')
+    os_type=sys.platform
+    if os_type=='win32':
+        os.system('color')
 
     #Start of Banner
     
