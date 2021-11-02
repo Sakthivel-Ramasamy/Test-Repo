@@ -2,6 +2,7 @@ import pkg_resources
 import subprocess
 import sys
 
+print("\nChecking for the required dependencies. If not found, the required dependencies will be installed.\nThis may take some time...\n")
 installed_packages={pkg.key for pkg in pkg_resources.working_set}
 required_packages={'argparse', 'datetime', 'ipaddress', 'python-nmap', 'prettytable', 'scapy', 'termcolor'}
 missing_packages=required_packages-installed_packages
@@ -10,7 +11,7 @@ if missing_packages:
     subprocess.check_call([python, '-m', 'pip', 'install', *missing_packages], stdout=subprocess.DEVNULL)
 
 import argparse
-import datetime
+from datetime import datetime
 import ipaddress
 import nmap
 import os
@@ -21,15 +22,12 @@ from termcolor import colored
 
 #Start of Host Discovery Scanner
 
-def host_discovery_scanner_using_nmap():
-    ip=input("\nEnter the IP in CIDR Notation (Default: 192.168.1.0/24): ")
-    if len(ip)==0:
-        network='192.168.1.0/24'
-    else:
-        network=ip
+def host_discovery_scanner_using_nmap(network):
+    counthost=0
+    host_discovery_scanner_using_nmap_start_time=datetime.now()
+    print("\nHost Discovery using Nmap Scan started at {}".format(host_discovery_scanner_using_nmap_start_time))
     print("\nScanning Please Wait...")
     print("(Note: This may take some time)")
-    counthost=0
     nm=nmap.PortScanner()
     nm.scan(hosts=network, arguments='-sn')
     host_list=list(nm.all_hosts())
@@ -52,19 +50,18 @@ def host_discovery_scanner_using_nmap():
     print("\nHost Discovery Using Nmap Result:")
     print(host_discovery_using_nmap_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
+    host_discovery_scanner_using_nmap_stop_time=datetime.now()
+    print("Host Discovery using Nmap Scan ended at {}".format(host_discovery_scanner_using_nmap_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(host_discovery_scanner_using_nmap_stop_time-host_discovery_scanner_using_nmap_start_time).total_seconds()))
 
-def host_discovery_scanner_using_scapy():
-    ip=input("\nEnter the IP in CIDR Notation (Default: 192.168.1.0/24): ")
-    if len(ip)==0:
-        network='192.168.1.0/24'
-    else:
-        network=ip
+def host_discovery_scanner_using_scapy(network):
+    counthost=0
+    host_discovery_scanner_using_scapy_start_time=datetime.now()
+    print("\nHost Discovery using Scay Scan started at {}".format(host_discovery_scanner_using_scapy_start_time))
     print("\nScanning Please Wait...")
     print("(Note: This may take negligible time)")
     a=Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.0/24")
     result=srp(a,timeout=3,verbose=False)[0]
-    counthost=0
-    print()
     host_discovery_using_scapy_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Vendor"])
     for element in result:
         #print("IP Address: {} MAC Address: {}".format(element[1].psrc, element[1].hwsrc))
@@ -80,7 +77,9 @@ def host_discovery_scanner_using_scapy():
     print("\nHost Discovery Using Scapy Result:")
     print(host_discovery_using_scapy_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
-
+    host_discovery_scanner_using_scapy_stop_time=datetime.now()
+    print("Host Discovery using Scapy Scan ended at {}".format(host_discovery_scanner_using_scapy_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(host_discovery_scanner_using_scapy_stop_time-host_discovery_scanner_using_scapy_start_time).total_seconds()))
 #End of Host Discovery Scanner
 
 #Start of Promiscuous Mode Detection Scanner
@@ -91,11 +90,13 @@ def promiscuous_response_identifier(ip):
     return result[0][1].hwsrc
     
 def promiscuous_device_scanner_using_ip_address(ip):
+    promiscuous_device_scanner_using_ip_address_start_time=datetime.now()
+    print("\nPromiscuouc Device Scanner using IP Address started at {}".format(promiscuous_device_scanner_using_ip_address_start_time))
     counthost=1
     global countpromiscuoushost
     global countnotpromiscuoushost
     promiscuous_mode_detection_using_ip_address_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Status"])
-    macaddress="NA"
+    macaddress="Error"
     try:
         result=promiscuous_response_identifier(ip)
         countpromiscuoushost+=1
@@ -108,8 +109,13 @@ def promiscuous_device_scanner_using_ip_address(ip):
     promiscuous_mode_detection_using_ip_address_output_table.add_row([counthost, ip, macaddress, status])
     print("\nPromiscuous Mode Detection Using IP Address Result:")
     print(promiscuous_mode_detection_using_ip_address_output_table)
+    promiscuous_device_scanner_using_ip_address_stop_time=datetime.now()
+    print("\nPromiscuous Device Scanner using IP Address ended at {}".format(promiscuous_device_scanner_using_ip_address_stop_time))
+    print("\nTotal Scan Duration in Seconds = {}".format(abs(promiscuous_device_scanner_using_ip_address_stop_time-promiscuous_device_scanner_using_ip_address_start_time).total_seconds()))
 
 def promiscuous_devices_scanner_using_nmap(network):
+    promiscuous_devices_scanner_using_nmap_start_time=datetime.now()
+    print("\nPromiscuous Devices Scanner using Nmap started at {}".format(promiscuous_devices_scanner_using_nmap_start_time))
     nm=nmap.PortScanner()
     nm.scan(hosts=network, arguments='-sn')
     host_list=list(nm.all_hosts())
@@ -142,8 +148,13 @@ def promiscuous_devices_scanner_using_nmap(network):
     print(promiscuous_mode_detection_using_nmap_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
     print("Number of Hosts in Promisucous Mode = {}\nNumber of Hosts not in Promisucous Mode = {}".format(countpromiscuoushost, countnotpromiscuoushost))
+    promiscuous_devices_scanner_using_nmap_stop_time=datetime.now()
+    print("\npromiscuous Devices Scanner using Nmap ended at {}".format(promiscuous_devices_scanner_using_nmap_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(promiscuous_devices_scanner_using_nmap_stop_time-promiscuous_devices_scanner_using_nmap_start_time).total_seconds()))
 
 def promiscuous_devices_scanner_using_scapy(network):
+    promiscuous_devices_scanner_using_scapy_start_time=datetime.now()
+    print("\nPromiscuous Devices Scanner using Scapy started at {}".format(promiscuous_devices_scanner_using_scapy_start_time))
     a=Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.0/24")
     result=srp(a,timeout=3,verbose=False)[0]
     counthost=0
@@ -171,24 +182,31 @@ def promiscuous_devices_scanner_using_scapy(network):
     print(promiscuous_mode_detection_using_scapy_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
     print("Number of Hosts in Promisucous Mode = {}\nNumber of Hosts not in Promisucous Mode = {}".format(countpromiscuoushost, countnotpromiscuoushost))
+    promiscuous_devices_scanner_using_scapy_stop_time=datetime.now()
+    print("\nPromiscuous Devices Scanner using Scapy ended at {}".format(promiscuous_devices_scanner_using_scapy_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(promiscuous_devices_scanner_using_scapy_stop_time-promiscuous_devices_scanner_using_scapy_start_time).total_seconds()))
 
 #End of Promiscuous Mode Detection Scanner
 
 #Start of ARP Spoofing Detection Scanner
 
-#arpcount=0
-
 #function if no spoofing is taking place 
 def arp_spoof_safe():
     print(colored("\nYou are safe", "white", "on_green", attrs=['bold']))
+    arp_spoofing_detection_scanner_stop_time=datetime.now()
+    print("\nARP Spoofing Detection Scanner ended at {}".format(arp_spoofing_detection_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(arp_spoofing_detection_scanner_stop_time-arp_spoofing_detection_scanner_start_time).total_seconds()))
     exit_process()
 
 def arp_spoof_not_safe(a):
-    print(colored(("\nYou are under attack REAL-MAC: "+str(a[0])+" FACE MAC:"+str(a[1])), "white", "on_red", attrs=['bold']))
+    print(colored(("\nYou are under attack\nVictim's MAC Address: "+str(a[0])+"\nAttacker's MAC Address: "+str(a[1])), "white", "on_red", attrs=['bold']))
+    arp_spoofing_detection_scanner_stop_time=datetime.now()
+    print("\nARP Spoofing Detection Scanner ended at {}".format(arp_spoofing_detection_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(arp_spoofing_detection_scanner_stop_time-arp_spoofing_detection_scanner_start_time).total_seconds()))
     exit_process()
 
 #function getting mac addrees by broadcasting the ARP msg packets 
-def arp_sppof_mac_identifier(ip):
+def arp_spoof_mac_identifier(ip):
     p = Ether(dst="FF:FF:FF:FF:FF:FF")/ARP(pdst=ip) 
     result = srp(p, timeout=3, verbose=False)[0] 
     return result[0][1].hwsrc
@@ -197,12 +215,12 @@ def arp_sppof_mac_identifier(ip):
 def arp_spoof_identifier(packet): 
     #print("process")
     # if the packet is an ARP packet 
-    global arpcount
+    global arpcount, arp_spoofing_detection_scanner_start_time
     if packet.haslayer(ARP) and packet[ARP].op == 2: 
         a=[]	 
         try: 
             # get the real MAC address of the sender 
-            real_mac = arp_sppof_mac_identifier(packet[ARP].psrc) 
+            real_mac = arp_spoof_mac_identifier(packet[ARP].psrc) 
             #print(real_mac) 
             # get the MAC address from the packet sent to us 
             response_mac = packet[ARP].hwsrc 
@@ -230,20 +248,16 @@ def arp_spoof_detector(interface):
 
 #Start of IP Spoofing Detection Scanner
 
-#ttl_values = {}
-# Threshold for maximum difference in TTL values
-#threshold=int(input("\nEnter the Threshold Value: "))
-
 # Checks if the TTL is within the maximum threshold
 def ip_spoof_ttl_checker(src, ttl):
     global ttl_values
-    global threshold
+    global ip_spoofing_detection_threshold
     if not src in ttl_values:
 		    icmp_pkt = sr1(IP(dst=src)/ICMP(), retry=0, verbose=0, timeout=1)
 		    ttl_values[src] = icmp_pkt.ttl
-    if abs(int(ttl_values[src]) - int(ttl)) > threshold:
-        print(f"[!] Detected possible spoofed packet from [{src}]")
-        print(f"[!] Received TTL: {ttl}, Actual TTL: {ttl_values[src]}")
+    if abs(int(ttl_values[src]) - int(ttl)) > ip_spoofing_detection_threshold:
+        print("[!] Detected Possible Spoofed Packet from the IP Address {}".format(src))
+        #print(f"[!] Received TTL: {ttl}, Actual TTL: {ttl_values[src]}")
 
 # Parses packets received and passes source IP 
 def ip_spoof_identifier(pkt):
@@ -259,7 +273,7 @@ def ip_spoof_identifier(pkt):
 # Grabs the src IP and TTL from the network traffic then compares the TTL with an ICMP echo reply. 
 # If the difference in TTL is greater than THRESHOLD a warning will be printed.
 def ip_spoof_detector(interface):
-	print(f"\n[*] Sniffing traffic on interface [{interface}]")
+	#print(f"\n[*] Sniffing traffic on interface [{interface}]")
 	sniff(prn=ip_spoof_identifier, iface=interface, store=False)
 
 #End of IP Spoofing Detection Scanner
@@ -288,19 +302,11 @@ def dns_spoof_identifier(packet):
             ipAdds2= dns_spoof_ip_identifier(firstPacket)
             #check if the MAC address is same. if not raise an alarm
             if macAddr2 != firstPacket[Ether].src:
-                print()                
-                print(str(datetime.now())+' DNS poisoning attempt')
-                print('TXID '+str(packet[DNS].id)+' Request '+packet[DNS].qd.qname.decode('utf-8')[:-1])
+                print("\nPossible DNS Poisoning Attempt Detected at {}".format(datetime.now()))
+                print("TXID "+str(packet[DNS].id)+" Request "+packet[DNS].qd.qname.decode('utf-8')[:-1])
                 #Doubtful about this stmt
-                print('Answer 1 ',str(ipAdds2))
-                print('Answer 2 ',str(ipAdds))
-                print()
-            #else:
-                #print('False positives')
-                #print('TXID '+str(packet[DNS].id)+' Request '+packet[DNS].qd.qname.decode('utf-8')[:-1])
-                #Doubtful about this stmt
-                #print('Answer 1 ',str(ipAdds2))
-                #print('Answer 2 ',str(ipAdds))
+                print("Attacker's IP Address: {}".format(str(ipAdds2)))
+                print("Victim's IP Address: {}".format(str(ipAdds)))
 
 def dns_spoof_detector(interface):
     argParser = argparse.ArgumentParser(add_help=False)
@@ -324,30 +330,33 @@ def dhcp_starvation_time_checker(time, newtime):
 
     # If the time is the same I don't need to check the milliseconds
     # If the hour is the same but not the minutes and there are in range of 10 mins send the frame
-    if (time == newtime) or ((hour1 == hour2) and (int(min2) - int(min1) in range(dhcp_starvation_timeout))):
+    if (time == newtime) or ((hour1 == hour2) and (int(min2) - int(min1) in range(dhcp_starvation_detection_timeout))):
         print(colored(("\nDHCP Count = "+ str(dhcpcount) + "\nWARNING: Possible DHCP Starvation Attack Detected"), "white", "on_red", attrs=['bold']))
-        return 0    
-    else:
         return 1
+    else:
+        return 0
 
 def dhcp_starvation_identifier(packet):
-    global dhcpcount, dhcpdict, dhcp_starvation_timeout, dhcp_starvation_threshold, starttime
+    global dhcpcount, dhcpdict, dhcp_starvation_detection_timeout, dhcp_starvation_detection_threshold, dhcp_starvation_detection_scanner_global_start_time, dhcp_starvation_detection_scanner_start_time
     newtime = (str(datetime.now()).split(" ")[1])
     newmac = packet.src
     if DHCP in packet and packet[DHCP].options[0][1] == 1:  # DHCP DISCOVER PACKET
         dhcpcount += 1
         for time, mac in dhcpdict.items():
-            if mac != newmac and dhcpcount > dhcp_starvation_threshold:
+            if mac != newmac and dhcpcount > dhcp_starvation_detection_threshold:
                 val = dhcp_starvation_time_checker(time, newtime)
-                if val == 0:
+                if val == 1:
                     dhcpcount=0
-                    starttime=datetime.now()
+                    #dhcp_starvation_detection_scanner_start_time=datetime.now()
+                    dhcp_starvation_detection_scanner_global_stop_time=datetime.now()
+                    print("\nDHCP Starvation Detection Scanner ended at {}".format(dhcp_starvation_detection_scanner_global_stop_time))
+                    print("Total Scan Duration in Seconds = {}".format(abs(dhcp_starvation_detection_scanner_global_stop_time-dhcp_starvation_detection_scanner_global_start_time).total_seconds()))
                     exit_process()
     dhcpdict[newtime] = newmac
-    stoptime=datetime.now()
-    if(abs(stoptime-starttime).total_seconds()>=dhcp_starvation_timeout):
+    dhcp_starvation_detection_scanner_stop_time=datetime.now()
+    if(abs(dhcp_starvation_detection_scanner_stop_time-dhcp_starvation_detection_scanner_start_time).total_seconds()>=dhcp_starvation_detection_timeout):
         dhcpcount=0
-        starttime=stoptime
+        dhcp_starvation_detection_scanner_start_time=datetime.now()
 
 def dhcp_starvation_detector(interface):
     sniff( prn=dhcp_starvation_identifier, iface=interface, filter='udp and (port 67 or port 68)', store=0)
@@ -471,11 +480,10 @@ def udp_scan(dst_ip,dst_port,dst_timeout):
     else:
         return ("Error")
 def tcp_connect_scan_port_scanner(ip, port_list, timeout):
-    tcp_connect_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP Connect Scan"])
-    #outputtable.align["Port No."] = "l"
-    
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
-    
+    tcp_connect_scan_port_scanner_start_time=datetime.now()
+    print("\nTCP Connect Scan Port Scanner started at {}".format(tcp_connect_scan_port_scanner_start_time))
+    tcp_connect_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP Connect Scan"])    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
     for i in port_list:
         print("\nStarting TCP Connect Scan for {}:{}...".format(ip, i))
         tcp_connect_scan_res = tcp_connect_scan(ip,int(i),int(timeout))
@@ -483,13 +491,15 @@ def tcp_connect_scan_port_scanner(ip, port_list, timeout):
         tcp_connect_scan_port_scanner_output_table.add_row([i, tcp_connect_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nTCP Connect Scan Result:".format(ip))
     print(tcp_connect_scan_port_scanner_output_table)
+    tcp_connect_scan_port_scanner_stop_time=datetime.now()
+    print("\nTCP Connect Scan Port Scanner ended at {}".format(tcp_connect_scan_port_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(tcp_connect_scan_port_scanner_stop_time-tcp_connect_scan_port_scanner_start_time).total_seconds()))
 
 def tcp_stealth_scan_port_scanner(ip, port_list, timeout):
+    tcp_stealth_scan_port_scanner_start_time=datetime.now()
+    print("\nTCP Stealth Scan port Scanner started at {}".format(tcp_stealth_scan_port_scanner_start_time))
     tcp_stealth_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP Stealth Scan"])
-    #outputtable.align["Port No."] = "l"
-    
     print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
-    
     for i in port_list:
         print("\nStarting TCP Stealth Scan for {}:{}...".format(ip, i))
         tcp_stealth_scan_res = tcp_stealth_scan(ip,int(i),int(timeout))
@@ -497,13 +507,15 @@ def tcp_stealth_scan_port_scanner(ip, port_list, timeout):
         tcp_stealth_scan_port_scanner_output_table.add_row([i, tcp_stealth_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nTCP Stealth Scan Result:".format(ip))
     print(tcp_stealth_scan_port_scanner_output_table)
+    tcp_stealth_scan_port_scanner_stop_time=datetime.now()
+    print("\nTCP Stealth Scan Port Scanner ended at {}".format(tcp_stealth_scan_port_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(tcp_stealth_scan_port_scanner_stop_time-tcp_stealth_scan_port_scanner_start_time).total_seconds()))
 
 def tcp_ack_scan_port_scanner(ip, port_list, timeout):
+    tcp_ack_scan_port_scanner_start_time=datetime.now()
+    print("\nTCP ACK Scan Port Scanner started at {}".format(tcp_ack_scan_port_scanner_start_time))
     tcp_ack_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP ACK Scan"])
-    #outputtable.align["Port No."] = "l"
-    
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
-    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
     for i in port_list:        
         print("\nStaring TCP ACK Scan for {}:{}...".format(ip, i))
         tcp_ack_flag_scan_res = tcp_ack_scan(ip,int(i),int(timeout))
@@ -511,13 +523,15 @@ def tcp_ack_scan_port_scanner(ip, port_list, timeout):
         tcp_ack_scan_port_scanner_output_table.add_row([i, tcp_ack_flag_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nTCP ACK Scan Result:".format(ip))
     print(tcp_ack_scan_port_scanner_output_table)
+    tcp_ack_scan_port_scanner_stop_time=datetime.now()
+    print("\nTCP ACK Scan Port Scanner ended at {}".format(tcp_ack_scan_port_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(tcp_ack_scan_port_scanner_stop_time-tcp_ack_scan_port_scanner_start_time).total_seconds()))
 
 def tcp_window_scan_port_scanner(ip, port_list, timeout):
+    tcp_window_scan_port_scanner_start_time=datetime.now()
+    print("\nTCP Window Scan Port Scanner started at {}".format(tcp_window_scan_port_scanner_start_time))
     tcp_window_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP Window Scan"])
-    #outputtable.align["Port No."] = "l"
-    
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
-    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
     for i in port_list:
         print("\nStarting TCP Window Scan for {}:{}...".format(ip, i))
         tcp_window_scan_res = tcp_window_scan(ip,int(i),int(timeout))
@@ -525,13 +539,15 @@ def tcp_window_scan_port_scanner(ip, port_list, timeout):
         tcp_window_scan_port_scanner_output_table.add_row([i, tcp_window_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nTCP Window Scan Result:".format(ip))
     print(tcp_window_scan_port_scanner_output_table)
+    tcp_window_scan_port_scanner_stop_time=datetime.now()
+    print("\nTCP Window Scan Port Scanner ended at {}".format(tcp_window_scan_port_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(tcp_window_scan_port_scanner_stop_time-tcp_window_scan_port_scanner_start_time).total_seconds()))
 
 def xmas_scan_port_scanner(ip, port_list, timeout):
+    xmas_scan_port_scanner_start_time=datetime.now()
+    print("\nXMAS Scan Port Scanner started at {}".format(xmas_scan_port_scanner_start_time))
     xmas_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "XMAS Scan"])
-    #outputtable.align["Port No."] = "l"
-    
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
-    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
     for i in port_list:
         print("\nStarting XMAS Scan for {}:{}...".format(ip, i))
         xmas_scan_res = xmas_scan(ip,int(i),int(timeout))
@@ -539,13 +555,15 @@ def xmas_scan_port_scanner(ip, port_list, timeout):
         xmas_scan_port_scanner_output_table.add_row([i, xmas_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nXMAS Scan Result:".format(ip))
     print(xmas_scan_port_scanner_output_table)
+    xmas_scan_port_scanner_stop_time=datetime.now()
+    print("\nXMAS Scan Port Scanner ended at {}".format(xmas_scan_port_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(xmas_scan_port_scanner_stop_time-xmas_scan_port_scanner_start_time).total_seconds()))
 
 def fin_scan_port_scanner(ip, port_list, timeout):
+    fin_scan_port_scanner_start_time=datetime.now()
+    print("\nFIN Scan Port Scanner started at {}".format(fin_scan_port_scanner_start_time))
     fin_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "FIN Scan"])
-    #outputtable.align["Port No."] = "l"
-    
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
-    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
     for i in port_list: 
         print("\nStarting FIN Scan for {}:{}...".format(ip, i))
         fin_scan_res = fin_scan(ip,int(i),int(timeout))
@@ -553,13 +571,15 @@ def fin_scan_port_scanner(ip, port_list, timeout):
         fin_scan_port_scanner_output_table.add_row([i, fin_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nFIN Scan Result:".format(ip))
     print(fin_scan_port_scanner_output_table)
+    fin_scan_port_scanner_stop_time=datetime.now()
+    print("\nFIN Scan Port Scanner ended at {}".format(fin_scan_port_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(fin_scan_port_scanner_stop_time-fin_scan_port_scanner_start_time).total_seconds()))
 
 def null_scan_port_scanner(ip, port_list, timeout):
+    null_scan_port_scanner_start_time=datetime.now()
+    print("\nNULL Scan Port Scanner started at {}".format(null_scan_port_scanner_start_time))
     null_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "NULL Scan"])
-    #outputtable.align["Port No."] = "l"
-    
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
-    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
     for i in port_list:
         print("\nStarting NULL Scan for {}:{}...".format(ip, i))
         null_scan_res = null_scan(ip,int(i),int(timeout))
@@ -567,13 +587,15 @@ def null_scan_port_scanner(ip, port_list, timeout):
         null_scan_port_scanner_output_table.add_row([i, null_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nNULL Scan Result:".format(ip))
     print(null_scan_port_scanner_output_table)
+    null_scan_port_scanner_stop_time=datetime.now()
+    print("\nNULL Scan Port Scanner ended at {}".format(null_scan_port_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(null_scan_port_scanner_stop_time-null_scan_port_scanner_start_time).total_seconds()))
 
 def udp_scan_port_scanner(ip, port_list, timeout):
+    udp_scan_port_scanner_start_time=datetime.now()
+    print("\nUDP Scan Port Scanner started at {}".format(udp_scan_port_scanner_start_time))
     udp_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "UDP Scan"])
-    #outputtable.align["Port No."] = "l"
-    
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
-    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
     for i in port_list:
         print("\nStarting UDP Scan for {}:{}...".format(ip, i))
         udp_scan_res = udp_scan(ip,int(i),int(timeout))
@@ -581,13 +603,15 @@ def udp_scan_port_scanner(ip, port_list, timeout):
         udp_scan_port_scanner_output_table.add_row([i, udp_scan_res])
     print("\n[*] Scan Completed for the Target: {}\n\nUDP Scan Result:".format(ip))
     print(udp_scan_port_scanner_output_table)
+    udp_scan_port_scanner_stop_time=datetime.now()
+    print("\nUDP Scan Port Scanner ended at {}".format(udp_scan_port_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(udp_scan_port_scanner_stop_time-udp_scan_port_scanner_start_time).total_seconds()))
 
 def all_methods_port_scanner(ip, port_list, timeout):
+    all_methods_port_scanner_start_time=datetime.now()
+    print("\nPort Scanner (All Methods) started at {}".format(all_methods_port_scanner_start_time))
     all_methods_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP Connect Scan", "TCP Stealth Scan", "TCP ACK Scan", "TCP Window Scan", "XMAS Scan", "FIN Scan", "NULL Scan", "UDP Scan"])
-    #outputtable.align["Port No."] = "l"
-    
-    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
-    
+    print ("\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
     for i in port_list:        
         print("\nStarting TCP Connect Scan for {}:{}...".format(ip, i))
         tcp_connect_scan_res = tcp_connect_scan(ip,int(i),int(timeout))
@@ -614,14 +638,19 @@ def all_methods_port_scanner(ip, port_list, timeout):
         udp_scan_res = udp_scan(ip,int(i),int(timeout))
         print("UDP Scan Completed for {}:{}".format(ip, i))
         all_methods_port_scanner_output_table.add_row([i, tcp_connect_scan_res, tcp_stealth_scan_res, tcp_ack_flag_scan_res, tcp_window_scan_res, xmas_scan_res, fin_scan_res, null_scan_res, udp_scan_res])
-    print("\n[*] Scan Completed for the Target: {}\n\nResult:".format(ip))
-    print(all_methods_port_scanner_output_table)    
+    print("\n[*] Scan Completed for the Target: {}\n\nPort Scanner (All Methods) Result:".format(ip))
+    print(all_methods_port_scanner_output_table)
+    all_methods_port_scanner_stop_time=datetime.now()
+    print("\nPort Scanner (All Methods) ended at {}".format(all_methods_port_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(all_methods_port_scanner_stop_time-all_methods_port_scanner_start_time).total_seconds()))
 
 #End of Port Scanner
 
 #Start of OS Detection Scanner
 
 def os_detector(ip):
+    os_detection_scanner_start_time=datetime.now()
+    print("\nOS Detection Scanner started at {}".format(os_detection_scanner_start_time))
     try:
         nm=nmap.PortScanner()
         os_scan_values=nm.scan(ip, arguments='-O')['scan'][ip]['osmatch']
@@ -643,10 +672,12 @@ def os_detector(ip):
         print(os_detection_output_table)
     except IndexError:
         print("\nSome Error Occurred...\Either the Target IP Address is filtering the connections or Not able to handle the response...\nPlease try again later...")
-        exit_process()
     except KeyError:
         print("\nSome Error Occurred...\nEither the Target IP Address is not active or Not able to reach the Target IP Address.\nPlease try again later...")
-        exit_process()
+    os_detection_scanner_stop_time=datetime.now()
+    print("\nOS Detection Scanner ended at {}".format(os_detection_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(os_detection_scanner_stop_time-os_detection_scanner_start_time).total_seconds()))
+    exit_process()
 
 #End of OS Detection Scanner
 
@@ -699,9 +730,19 @@ if __name__=="__main__":
         print(colored(") >", "green", attrs=['bold']), end=" ")
         choice=int(input())
         if(choice==1):
-            host_discovery_scanner_using_nmap()
+            try:
+                network=input("\nEnter the IP in CIDR Notation (Format: 192.168.1.0/24): ")    
+                ipaddress.ip_network(network)
+                host_discovery_scanner_using_nmap(network)
+            except ValueError:
+                print("\nInvalid IP CIDR Address Entered...")
         elif(choice==2):
-            host_discovery_scanner_using_scapy()
+            try:
+                network=input("\nEnter the IP in CIDR Notation (Format: 192.168.1.0/24): ")    
+                ipaddress.ip_network(network)
+                host_discovery_scanner_using_scapy(network)
+            except ValueError:
+                print("\nInvalid IP CIDR Address Entered...")
     elif(featureselection==2):
         print("\nEnter 1 for Individual IPScan\n      2 for Subnet Scan\n")
         print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
@@ -712,16 +753,12 @@ if __name__=="__main__":
         suboption=int(input())
         if(suboption==1):
             try:
-                ipaddr=input("\nEnter the Target IP Address (Default: 127.0.0.1): ")
-                if len(ipaddr)==0:
-                    ip='127.0.0.1'
-                else:
-                    ip=ipaddr
+                ip=input("\nEnter the Target IP Address (Format: 127.0.0.1): ")
                 ipaddress.ip_address(ip)
                 promiscuous_device_scanner_using_ip_address(ip)
             except ValueError:
-                    print("\nInvalid IP Address Entered...")
-                    exit_process()
+                print("\nInvalid IP Address Entered...")
+                exit_process()
         elif(suboption==2):
             print("\nEnter 1 to scan using Nmap (Speed of Scan: Moderate)\n      2 to scan using Scapy (Speed of Scan: Fast)\n")
             print(colored("$ hopperjet(", "green", attrs=['bold']), end="")
@@ -730,9 +767,7 @@ if __name__=="__main__":
             choice=int(input())
             if(choice==1):
                 try:
-                    network=input("\nEnter the IP in CIDR Notation (Default: 192.168.1.0/24): ")
-                    if len(network)==0:
-                        network='192.168.1.0/24'
+                    network=input("\nEnter the IP in CIDR Notation (Format: 192.168.1.0/24): ")
                     ipaddress.ip_network(network)
                     print("\nScanning Please Wait...")
                     print("(Note: This may take some time)")
@@ -742,9 +777,7 @@ if __name__=="__main__":
                     exit_process()
             elif(choice==2):
                 try:
-                    network=input("\nEnter the IP in CIDR Notation (Default: 192.168.1.0/24): ")
-                    if len(network)==0:
-                        network='192.168.1.0/24'
+                    network=input("\nEnter the IP in CIDR Notation (Format: 192.168.1.0/24): ")
                     ipaddress.ip_network(network)
                     print("\nScanning Please Wait...")
                     print("(Note: This may take negligible time)")
@@ -753,45 +786,54 @@ if __name__=="__main__":
                     print("\nInvalid IP CIDR Address Entered...")
                     exit_process()
     elif(featureselection==3):
-        interface=input("\nEnter the Interface of the Host (Default: eth0): ")
+        interface=input("\nEnter the Interface of the Host: ")
         if len(interface)==0:
-            interface='eth0'
+            interface=conf.iface
+        print("\nInterface Selected = {}".format(interface))
         arpcount=0
+        arp_spoofing_detection_scanner_start_time=datetime.now()
+        print("\nARP Spoofing Detection Scanner started at {}".format(arp_spoofing_detection_scanner_start_time))
         arp_spoof_detector(interface)
     elif(featureselection==4):
-        interface=input("\nEnter the Interface of the Host (Default: eth0): ")
+        interface=input("\nEnter the Interface of the Host: ")
         if len(interface)==0:
-            interface='eth0'
+            interface=conf.iface
+        print("\nInterface Selected = {}".format(interface))
         ttl_values={}
-        try:
-            threshold=int(input("\nEnter the Threshold Value (Default: 5): "))
-        except ValueError:
-            threshold=5
+        #try:
+        #    ip_spoofing_detection_threshold=int(input("\nEnter the Threshold Value (Default: 5): "))
+        #except ValueError:
+        #    ip_spoofing_detection_threshold=5
+        ip_spoofing_detection_threshold=5
+        ip_spoofing_detection_scanner_start_time=datetime.now()
+        print("\nIP Spoofing Detection Scanner started at {}".format(ip_spoofing_detection_scanner_start_time))
         print("\nWarning: This may slow down your system and it may not respond as expected...")
         ip_spoof_detector(interface)
     elif(featureselection==5):
-        interface=input("\nEnter the Interface of the Host (Default: eth0): ")
+        interface=input("\nEnter the Interface of the Host: ")
         if len(interface)==0:
             interface=conf.iface
+        print("\nInterface Selected = {}".format(interface))
         dnsMap={}
+        dns_spoofing_detection_scanner_start_time=datetime.now()
+        print("\nDNS Spoofing Detection Scanner started at {}".format(dns_spoofing_detection_scanner_start_time))
         dns_spoof_detector(interface)
     elif(featureselection==6):
-        interface=input("\nEnter the Interface of the Host (Default: eth0): ")
+        interface=input("\nEnter the Interface of the Host: ")
         if len(interface)==0:
             interface=conf.iface
+        print("\nInterface Selected = {}".format(interface))
         dhcpcount=0
         dhcpdict={}
-        dhcp_starvation_timeout=int(input("\nEnter the Timeout Duration in seconds: "))
-        dhcp_starvation_threshold=int(input("\nEnter the DHCP DISCOVER Message Threshlod Value: "))
-        starttime=datetime.now()
+        dhcp_starvation_detection_timeout=int(input("\nEnter the Timeout Duration in seconds: "))
+        dhcp_starvation_detection_threshold=int(input("\nEnter the DHCP DISCOVER Message Threshlod Value: "))
+        dhcp_starvation_detection_scanner_global_start_time=datetime.now()
+        dhcp_starvation_detection_scanner_start_time=dhcp_starvation_detection_scanner_global_start_time
+        print("\nDHCP Starvation Detection Scanner started at {}".format(dhcp_starvation_detection_scanner_global_start_time))
         dhcp_starvation_detector(interface)
     elif(featureselection==7):
         try:
-            ipaddr=input("\nEnter the Target IP Address (Default: 127.0.0.1): ")
-            if len(ipaddr)==0:
-                ip='127.0.0.1'
-            else:
-                ip=ipaddr
+            ip=input("\nEnter the Target IP Address (Format: 127.0.0.1): ")
             ipaddress.ip_address(ip)
         except ValueError:
             print("\nInvalid IP Address Entered...")
@@ -859,11 +901,7 @@ if __name__=="__main__":
             all_methods_port_scanner(ip, port_list, timeout)
     elif(featureselection==8):
         try:
-            ipaddr=input("\nEnter the Target IP Address (Default: 127.0.0.1): ")
-            if len(ipaddr)==0:
-                ip='127.0.0.1'
-            else:
-                ip=ipaddr
+            ip=input("\nEnter the Target IP Address (Format: 127.0.0.1): ")
             ipaddress.ip_address(ip)
             os_detector(ip)
         except ValueError:
