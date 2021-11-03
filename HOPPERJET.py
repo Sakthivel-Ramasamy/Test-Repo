@@ -192,14 +192,14 @@ def promiscuous_devices_scanner_using_scapy(network):
 
 #function if no spoofing is taking place 
 def arp_spoof_safe():
-    print(colored("\nYou are safe", "white", "on_green", attrs=['bold']))
+    print(colored("\nTimestamp: {}\nMessage: You are safe".format(datetime.now()), "white", "on_green", attrs=['bold']))
     arp_spoofing_detection_scanner_stop_time=datetime.now()
     print("\nARP Spoofing Detection Scanner ended at {}".format(arp_spoofing_detection_scanner_stop_time))
     print("Total Scan Duration in Seconds = {}".format(abs(arp_spoofing_detection_scanner_stop_time-arp_spoofing_detection_scanner_start_time).total_seconds()))
     exit_process()
 
 def arp_spoof_not_safe(a):
-    print(colored(("\nYou are under attack\nVictim's MAC Address: "+str(a[0])+"\nAttacker's MAC Address: "+str(a[1])), "white", "on_red", attrs=['bold']))
+    print(colored("\nTimestamp: {}\nMessage: You are under attack\nVictim's MAC Address: {}\nAttacker's MAC Address: {}".format(datetime.now(), a[0], a[1]), "white", "on_red", attrs=['bold']))
     arp_spoofing_detection_scanner_stop_time=datetime.now()
     print("\nARP Spoofing Detection Scanner ended at {}".format(arp_spoofing_detection_scanner_stop_time))
     print("Total Scan Duration in Seconds = {}".format(abs(arp_spoofing_detection_scanner_stop_time-arp_spoofing_detection_scanner_start_time).total_seconds()))
@@ -256,7 +256,7 @@ def ip_spoof_ttl_checker(src, ttl):
 		    icmp_pkt = sr1(IP(dst=src)/ICMP(), retry=0, verbose=0, timeout=1)
 		    ttl_values[src] = icmp_pkt.ttl
     if abs(int(ttl_values[src]) - int(ttl)) > ip_spoofing_detection_threshold:
-        print("[!] Detected Possible Spoofed Packet from the IP Address {}".format(src))
+        print("\nTimestamp: {}\nMessage: Detected Possible Spoofed Packet from the IP Address {}".format(datetime.now(), src))
         #print(f"[!] Received TTL: {ttl}, Actual TTL: {ttl_values[src]}")
 
 # Parses packets received and passes source IP 
@@ -302,7 +302,7 @@ def dns_spoof_identifier(packet):
             ipAdds2= dns_spoof_ip_identifier(firstPacket)
             #check if the MAC address is same. if not raise an alarm
             if macAddr2 != firstPacket[Ether].src:
-                print("\nPossible DNS Poisoning Attempt Detected at {}".format(datetime.now()))
+                print("\nTimestamp: {}\nMessage: Possible DNS Poisoning Attempt Detected".format(datetime.now()))
                 print("TXID "+str(packet[DNS].id)+" Request "+packet[DNS].qd.qname.decode('utf-8')[:-1])
                 #Doubtful about this stmt
                 print("Attacker's IP Address: {}".format(str(ipAdds2)))
@@ -331,7 +331,7 @@ def dhcp_starvation_time_checker(time, newtime):
     # If the time is the same I don't need to check the milliseconds
     # If the hour is the same but not the minutes and there are in range of 10 mins send the frame
     if (time == newtime) or ((hour1 == hour2) and (int(min2) - int(min1) in range(dhcp_starvation_detection_timeout))):
-        print(colored(("\nDHCP Count = "+ str(dhcpcount) + "\nWARNING: Possible DHCP Starvation Attack Detected"), "white", "on_red", attrs=['bold']))
+        print(colored(("\nDHCP Count = {}\nTimestamp: {}\nMessage: Possible DHCP Starvation Attack Detected".format(dhcpcount, datetime.now())), "white", "on_red", attrs=['bold']))
         return 1
     else:
         return 0
