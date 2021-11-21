@@ -16,7 +16,6 @@ def dns_spoof_identifier(packet):
         global dnsMap
         if packet[DNS].id not in dnsMap:
             dnsMap[packet[DNS].id]=packet
-            #print('Packet added to Map')
         else:
             #get mac address from packet
             # Will have to check if this is correct
@@ -26,19 +25,10 @@ def dns_spoof_identifier(packet):
             ipAdds2= dns_spoof_ip_identifier(firstPacket)
             #check if the MAC address is same. if not raise an alarm
             if macAddr2 != firstPacket[Ether].src:
-                print()                
-                print(str(datetime.now())+' DNS poisoning attempt')
-                print('TXID '+str(packet[DNS].id)+' Request '+packet[DNS].qd.qname.decode('utf-8')[:-1])
-                #Doubtful about this stmt
-                print('Answer 1 ',str(ipAdds2))
-                print('Answer 2 ',str(ipAdds))
-                print()
-            #else:
-                #print('False positives')
-                #print('TXID '+str(packet[DNS].id)+' Request '+packet[DNS].qd.qname.decode('utf-8')[:-1])
-                #Doubtful about this stmt
-                #print('Answer 1 ',str(ipAdds2))
-                #print('Answer 2 ',str(ipAdds))
+                print("\nTimestamp: {}\nMessage: Possible DNS Poisoning Attempt Detected".format(datetime.now()))
+                print("TXID "+str(packet[DNS].id)+" Request "+packet[DNS].qd.qname.decode('utf-8')[:-1])
+                print("Attacker's IP Address: {}".format(str(ipAdds2)))
+                print("Victim's IP Address: {}".format(str(ipAdds)))
 
 def dns_spoof_detector(interface):
     argParser = argparse.ArgumentParser(add_help=False)
