@@ -7,6 +7,8 @@ import sys
 #Start of OS Detection Scanner
 
 def os_detector(ip):
+    os_detection_scanner_start_time=datetime.now()
+    print("\nOS Detection Scanner started at {}".format(os_detection_scanner_start_time))
     try:
         nm=nmap.PortScanner()
         os_scan_values=nm.scan(ip, arguments='-O')['scan'][ip]['osmatch']
@@ -28,10 +30,12 @@ def os_detector(ip):
         print(os_detection_output_table)
     except IndexError:
         print("\nSome Error Occurred...\Either the Target IP Address is filtering the connections or Not able to handle the response...\nPlease try again later...")
-        exit_process()
     except KeyError:
         print("\nSome Error Occurred...\nEither the Target IP Address is not active or Not able to reach the Target IP Address.\nPlease try again later...")
-        exit_process()
+    os_detection_scanner_stop_time=datetime.now()
+    print("\nOS Detection Scanner ended at {}".format(os_detection_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(os_detection_scanner_stop_time-os_detection_scanner_start_time).total_seconds()))
+    exit_process()
 
 #End of OS Detection Scanner
 
