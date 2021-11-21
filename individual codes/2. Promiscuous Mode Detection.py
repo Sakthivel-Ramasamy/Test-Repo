@@ -13,11 +13,13 @@ def promiscuous_response_identifier(ip):
     return result[0][1].hwsrc
     
 def promiscuous_device_scanner_using_ip_address(ip):
+    promiscuous_device_scanner_using_ip_address_start_time=datetime.now()
+    print("\nPromiscuouc Device Scanner using IP Address started at {}".format(promiscuous_device_scanner_using_ip_address_start_time))
     counthost=1
     global countpromiscuoushost
     global countnotpromiscuoushost
     promiscuous_mode_detection_using_ip_address_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Status"])
-    macaddress="NA"
+    macaddress="Error"
     try:
         result=promiscuous_response_identifier(ip)
         countpromiscuoushost+=1
@@ -30,8 +32,13 @@ def promiscuous_device_scanner_using_ip_address(ip):
     promiscuous_mode_detection_using_ip_address_output_table.add_row([counthost, ip, macaddress, status])
     print("\nPromiscuous Mode Detection Using IP Address Result:")
     print(promiscuous_mode_detection_using_ip_address_output_table)
+    promiscuous_device_scanner_using_ip_address_stop_time=datetime.now()
+    print("\nPromiscuous Device Scanner using IP Address ended at {}".format(promiscuous_device_scanner_using_ip_address_stop_time))
+    print("\nTotal Scan Duration in Seconds = {}".format(abs(promiscuous_device_scanner_using_ip_address_stop_time-promiscuous_device_scanner_using_ip_address_start_time).total_seconds()))
 
 def promiscuous_devices_scanner_using_nmap(network):
+    promiscuous_devices_scanner_using_nmap_start_time=datetime.now()
+    print("\nPromiscuous Devices Scanner using Nmap started at {}".format(promiscuous_devices_scanner_using_nmap_start_time))
     nm=nmap.PortScanner()
     nm.scan(hosts=network, arguments='-sn')
     host_list=list(nm.all_hosts())
@@ -64,8 +71,13 @@ def promiscuous_devices_scanner_using_nmap(network):
     print(promiscuous_mode_detection_using_nmap_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
     print("Number of Hosts in Promisucous Mode = {}\nNumber of Hosts not in Promisucous Mode = {}".format(countpromiscuoushost, countnotpromiscuoushost))
+    promiscuous_devices_scanner_using_nmap_stop_time=datetime.now()
+    print("\npromiscuous Devices Scanner using Nmap ended at {}".format(promiscuous_devices_scanner_using_nmap_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(promiscuous_devices_scanner_using_nmap_stop_time-promiscuous_devices_scanner_using_nmap_start_time).total_seconds()))
 
 def promiscuous_devices_scanner_using_scapy(network):
+    promiscuous_devices_scanner_using_scapy_start_time=datetime.now()
+    print("\nPromiscuous Devices Scanner using Scapy started at {}".format(promiscuous_devices_scanner_using_scapy_start_time))
     a=Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.0/24")
     result=srp(a,timeout=3,verbose=False)[0]
     counthost=0
@@ -93,6 +105,9 @@ def promiscuous_devices_scanner_using_scapy(network):
     print(promiscuous_mode_detection_using_scapy_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
     print("Number of Hosts in Promisucous Mode = {}\nNumber of Hosts not in Promisucous Mode = {}".format(countpromiscuoushost, countnotpromiscuoushost))
+    promiscuous_devices_scanner_using_scapy_stop_time=datetime.now()
+    print("\nPromiscuous Devices Scanner using Scapy ended at {}".format(promiscuous_devices_scanner_using_scapy_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(promiscuous_devices_scanner_using_scapy_stop_time-promiscuous_devices_scanner_using_scapy_start_time).total_seconds()))
 
 #End of Promiscuous Mode Detection Scanner
 
