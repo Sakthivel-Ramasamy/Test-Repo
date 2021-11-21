@@ -7,15 +7,12 @@ from termcolor import colored
 
 #Start of Host Discovery Scanner
 
-def host_discovery_scanner_using_nmap():
-    ip=input("\nEnter the IP in CIDR Notation (Default: 192.168.1.0/24): ")
-    if len(ip)==0:
-        network='192.168.1.0/24'
-    else:
-        network=ip
+def host_discovery_scanner_using_nmap(network):
+    counthost=0
+    host_discovery_scanner_using_nmap_start_time=datetime.now()
+    print("\nHost Discovery using Nmap Scan started at {}".format(host_discovery_scanner_using_nmap_start_time))
     print("\nScanning Please Wait...")
     print("(Note: This may take some time)")
-    counthost=0
     nm=nmap.PortScanner()
     nm.scan(hosts=network, arguments='-sn')
     host_list=list(nm.all_hosts())
@@ -38,19 +35,18 @@ def host_discovery_scanner_using_nmap():
     print("\nHost Discovery Using Nmap Result:")
     print(host_discovery_using_nmap_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
+    host_discovery_scanner_using_nmap_stop_time=datetime.now()
+    print("Host Discovery using Nmap Scan ended at {}".format(host_discovery_scanner_using_nmap_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(host_discovery_scanner_using_nmap_stop_time-host_discovery_scanner_using_nmap_start_time).total_seconds()))
 
-def host_discovery_scanner_using_scapy():
-    ip=input("\nEnter the IP in CIDR Notation (Default: 192.168.1.0/24): ")
-    if len(ip)==0:
-        network='192.168.1.0/24'
-    else:
-        network=ip
+def host_discovery_scanner_using_scapy(network):
+    counthost=0
+    host_discovery_scanner_using_scapy_start_time=datetime.now()
+    print("\nHost Discovery using Scay Scan started at {}".format(host_discovery_scanner_using_scapy_start_time))
     print("\nScanning Please Wait...")
     print("(Note: This may take negligible time)")
     a=Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.0/24")
     result=srp(a,timeout=3,verbose=False)[0]
-    counthost=0
-    print()
     host_discovery_using_scapy_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Vendor"])
     for element in result:
         #print("IP Address: {} MAC Address: {}".format(element[1].psrc, element[1].hwsrc))
@@ -66,6 +62,9 @@ def host_discovery_scanner_using_scapy():
     print("\nHost Discovery Using Scapy Result:")
     print(host_discovery_using_scapy_output_table)
     print("\nTotal {} hosts are alive in the given network {}".format(counthost, network))
+    host_discovery_scanner_using_scapy_stop_time=datetime.now()
+    print("Host Discovery using Scapy Scan ended at {}".format(host_discovery_scanner_using_scapy_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(host_discovery_scanner_using_scapy_stop_time-host_discovery_scanner_using_scapy_start_time).total_seconds()))
 
 #End of Host Discovery Scanner
 
