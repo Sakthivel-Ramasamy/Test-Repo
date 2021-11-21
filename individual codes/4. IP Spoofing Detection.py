@@ -9,13 +9,13 @@ from scapy.all import *
 # Checks if the TTL is within the maximum threshold
 def ip_spoof_ttl_checker(src, ttl):
     global ttl_values
-    global threshold
+    global ip_spoofing_detection_threshold
     if not src in ttl_values:
 		    icmp_pkt = sr1(IP(dst=src)/ICMP(), retry=0, verbose=0, timeout=1)
 		    ttl_values[src] = icmp_pkt.ttl
-    if abs(int(ttl_values[src]) - int(ttl)) > threshold:
-        print(f"[!] Detected possible spoofed packet from [{src}]")
-        print(f"[!] Received TTL: {ttl}, Actual TTL: {ttl_values[src]}")
+    if abs(int(ttl_values[src]) - int(ttl)) > ip_spoofing_detection_threshold:
+        print("\nTimestamp: {}\nMessage: Detected Possible Spoofed Packet from the IP Address {}".format(datetime.now(), src))
+        #print(f"[!] Received TTL: {ttl}, Actual TTL: {ttl_values[src]}")
 
 # Parses packets received and passes source IP 
 def ip_spoof_identifier(pkt):
@@ -31,7 +31,6 @@ def ip_spoof_identifier(pkt):
 # Grabs the src IP and TTL from the network traffic then compares the TTL with an ICMP echo reply. 
 # If the difference in TTL is greater than THRESHOLD a warning will be printed.
 def ip_spoof_detector(interface):
-	print(f"\n[*] Sniffing traffic on interface [{interface}]")
 	sniff(prn=ip_spoof_identifier, iface=interface, store=False)
 
 #End of IP Spoofing Detection Scanner
