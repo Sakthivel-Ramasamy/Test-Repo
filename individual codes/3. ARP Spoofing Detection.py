@@ -4,33 +4,34 @@ from termcolor import colored
 
 #Start of ARP Spoofing Detection Scanner
 
-#arpcount=0
-
-#function if no spoofing is taking place 
 def arp_spoof_safe():
-    print(colored("\nYou are safe", "white", "on_green", attrs=['bold']))
+    print(colored("\nTimestamp: {}\nMessage: You are safe".format(datetime.now()), "white", "on_green", attrs=['bold']))
+    arp_spoofing_detection_scanner_stop_time=datetime.now()
+    print("\nARP Spoofing Detection Scanner ended at {}".format(arp_spoofing_detection_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(arp_spoofing_detection_scanner_stop_time-arp_spoofing_detection_scanner_start_time).total_seconds()))
     exit_process()
 
 def arp_spoof_not_safe(a):
-    print(colored(("\nYou are under attack REAL-MAC: "+str(a[0])+" FACE MAC:"+str(a[1])), "white", "on_red", attrs=['bold']))
+    print(colored("\nTimestamp: {}\nMessage: You are under attack\nVictim's MAC Address: {}\nAttacker's MAC Address: {}".format(datetime.now(), a[0], a[1]), "white", "on_red", attrs=['bold']))
+    arp_spoofing_detection_scanner_stop_time=datetime.now()
+    print("\nARP Spoofing Detection Scanner ended at {}".format(arp_spoofing_detection_scanner_stop_time))
+    print("Total Scan Duration in Seconds = {}".format(abs(arp_spoofing_detection_scanner_stop_time-arp_spoofing_detection_scanner_start_time).total_seconds()))
     exit_process()
 
 #function getting mac addrees by broadcasting the ARP msg packets 
-def arp_sppof_mac_identifier(ip):
+def arp_spoof_mac_identifier(ip):
     p = Ether(dst="FF:FF:FF:FF:FF:FF")/ARP(pdst=ip) 
     result = srp(p, timeout=3, verbose=False)[0] 
     return result[0][1].hwsrc
 
 #process for every packet received by sniff function 
-def arp_spoof_identifier(packet): 
-    #print("process")
-    # if the packet is an ARP packet 
-    global arpcount
+def arp_spoof_identifier(packet):
+    global arpcount, arp_spoofing_detection_scanner_start_time
     if packet.haslayer(ARP) and packet[ARP].op == 2: 
         a=[]	 
         try: 
             # get the real MAC address of the sender 
-            real_mac = arp_sppof_mac_identifier(packet[ARP].psrc) 
+            real_mac = arp_spoof_mac_identifier(packet[ARP].psrc) 
             #print(real_mac) 
             # get the MAC address from the packet sent to us 
             response_mac = packet[ARP].hwsrc 
