@@ -1,0 +1,7 @@
+argparse
+datetime
+ipaddress
+python-nmap
+prettytable
+scapy
+termcolor
