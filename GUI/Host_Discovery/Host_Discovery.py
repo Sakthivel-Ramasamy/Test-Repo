@@ -81,7 +81,7 @@ if __name__=="__main__":
     feature=json_data["Method"]
     network=json_data["IP_Address"]
     drop_down=json_data["Drop_Down"]
-    if feature=="Host_Discovery":
+    if feature=="Host Discovery":
         if drop_down=="Nmap":
             host_discovery_scanner_using_nmap(network)
         elif drop_down=="Scapy":
