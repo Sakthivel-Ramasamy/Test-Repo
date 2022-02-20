@@ -1,4 +1,5 @@
 argparse
+black
 datetime
 ipaddress
 python-nmap
