@@ -22,7 +22,7 @@ def xmas_scan(dst_ip,dst_port,dst_timeout):
         return ("Error")
 
 def xmas_scan_port_scanner(ip, port_list, timeout):
-    output=open("xmas_scan_out.hop", "a")
+    output=open("output.hop", "a")
     output.truncate(0)
     xmas_scan_port_scanner_start_time=datetime.now()
     output.write("XMAS Scan Port Scanner started at {}".format(xmas_scan_port_scanner_start_time))

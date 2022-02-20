@@ -86,7 +86,7 @@ if __name__=="__main__":
     if len(interface)==0:
         interface=conf.iface
     arpcount=0
-    output=open("arp_spoof_out.hop", "a")
+    output=open("output.hop", "a")
     output.truncate(0)
     arp_spoofing_detection_scanner_start_time=datetime.now()
     arp_spoof_detector(interface) 

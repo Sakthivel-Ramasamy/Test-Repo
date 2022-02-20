@@ -25,7 +25,7 @@ def host_discovery_scanner_using_scapy(network):
                 break
         host_discovery_using_scapy_output_table.add_row([counthost, element[1].psrc, element[1].hwsrc, vendor])
     host_discovery_scanner_using_scapy_stop_time=datetime.now()
-    output=open("host_scapy_out.hop", "a")
+    output=open("output.hop", "a")
     output.truncate(0)
     output.write("Host Discovery using Scay Scan started at {}".format(host_discovery_scanner_using_scapy_start_time))
     output.write("\n\nScanning Please Wait...")

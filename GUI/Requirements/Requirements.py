@@ -10,7 +10,7 @@ try:
     if missing_packages:
         python = sys.executable
         subprocess.check_call([python, '-m', 'pip', 'install', *missing_packages], stdout=subprocess.DEVNULL)
-    success_file=open("Success.HOPPERJET", "w")
+    success_file=open("success.hop", "w")
     success_file.write("HOPPERJET dependencies installed successfully!")
     success_file.close()
 except:

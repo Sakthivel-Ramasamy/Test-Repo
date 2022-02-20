@@ -32,7 +32,7 @@ def os_detector(ip):
     except KeyError:
         print("\nSome Error Occurred...\nEither the Target IP Address is not active or Not able to reach the Target IP Address.\nPlease try again later...")
     os_detection_scanner_stop_time=datetime.now()
-    output=open("os_detection_out.hop", "a")
+    output=open("output.hop", "a")
     output.truncate(0)
     output.write("OS Detection Scanner started at {}".format(os_detection_scanner_start_time))
     output.write("\n\nOS Detection Results:\n")

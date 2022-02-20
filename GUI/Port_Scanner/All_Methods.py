@@ -124,7 +124,7 @@ def udp_scan(dst_ip,dst_port,dst_timeout):
         return ("Error")
 
 def all_methods_port_scanner(ip, port_list, timeout):
-    output=open("all_methods_scan_out.hop", "a")
+    output=open("output.hop", "a")
     output.truncate(0)
     all_methods_port_scanner_start_time=datetime.now()
     output.write("Port Scanner (All Methods) started at {}".format(all_methods_port_scanner_start_time))

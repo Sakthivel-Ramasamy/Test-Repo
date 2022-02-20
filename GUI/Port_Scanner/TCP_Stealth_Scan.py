@@ -27,7 +27,7 @@ def tcp_stealth_scan(dst_ip,dst_port,dst_timeout):
         return ("Error")
 
 def tcp_stealth_scan_port_scanner(ip, port_list, timeout):
-    output=open("tcs_stealth_scan_out.hop", "a")
+    output=open("output.hop", "a")
     output.truncate(0)
     tcp_stealth_scan_port_scanner_start_time=datetime.now()
     output.write("TCP Stealth Scan port Scanner started at {}".format(tcp_stealth_scan_port_scanner_start_time))

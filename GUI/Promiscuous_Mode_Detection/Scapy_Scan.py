@@ -39,7 +39,7 @@ def promiscuous_devices_scanner_using_scapy(network):
             status="No Promiscuous Mode Suspected"
         promiscuous_mode_detection_using_scapy_output_table.add_row([counthost, ip, macaddress, status])
     promiscuous_devices_scanner_using_scapy_stop_time=datetime.now()
-    output=open("promiscuous-scapy_out", "a")
+    output=open("output.hop", "a")
     output.truncate(0)
     output.write("Promiscuous Devices Scanner using Scapy started at {}".format(promiscuous_devices_scanner_using_scapy_start_time))
     output.write("\n\nPromiscuous Mode Detection Using Scapy Results:\n")

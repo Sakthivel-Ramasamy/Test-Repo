@@ -24,7 +24,7 @@ def tcp_connect_scan(dst_ip,dst_port,dst_timeout):
         return ("Error")
 
 def tcp_connect_scan_port_scanner(ip, port_list, timeout):
-    output=open("tcp_connect_scan_out.hop", "a")
+    output=open("output.hop", "a")
     output.truncate(0)
     tcp_connect_scan_port_scanner_start_time=datetime.now()
     output.write("TCP Connect Scan Port Scanner started at {}".format(tcp_connect_scan_port_scanner_start_time))

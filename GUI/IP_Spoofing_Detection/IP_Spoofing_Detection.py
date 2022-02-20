@@ -53,7 +53,7 @@ if __name__=="__main__":
     except ValueError:
         threshold=5
     print("\nWarning: This may slow down your system and it may not respond as expected...")
-    output=open("ip_spoof_out.hop", "a")
+    output=open("output.hop", "a")
     output.truncate(0)
     ip_spoof_detector(interface)
     output.close()

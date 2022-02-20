@@ -45,7 +45,7 @@ def promiscuous_devices_scanner_using_nmap(network):
             status="No Promiscuous Mode Suspected"
         promiscuous_mode_detection_using_nmap_output_table.add_row([counthost, ip, macaddress, status])
     promiscuous_devices_scanner_using_nmap_stop_time=datetime.now()
-    output=open("promiscuous_nmap_out.hop", "a")
+    output=open("output.hop", "a")
     output.truncate(0)
     output.write("Promiscuous Devices Scanner using Nmap started at {}".format(promiscuous_devices_scanner_using_nmap_start_time))
     output.write("\n\nPromiscuous Mode Detection Using Nmap Results:\n")

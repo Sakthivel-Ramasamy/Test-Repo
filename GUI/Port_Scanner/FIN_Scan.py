@@ -22,7 +22,7 @@ def fin_scan(dst_ip,dst_port,dst_timeout):
         return ("Error")
 
 def fin_scan_port_scanner(ip, port_list, timeout):
-    output=open("fin_scan_out.hop", "a")
+    output=open("output.hop", "a")
     output.truncate(0)
     fin_scan_port_scanner_start_time=datetime.now()
     output.write("FIN Scan Port Scanner started at {}".format(fin_scan_port_scanner_start_time))

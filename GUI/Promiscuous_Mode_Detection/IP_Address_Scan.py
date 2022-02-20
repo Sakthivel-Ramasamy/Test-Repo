@@ -31,7 +31,7 @@ def promiscuous_device_scanner_using_ip_address(ip):
         status="No Promiscuous Mode Suspected"
     promiscuous_mode_detection_using_ip_address_output_table.add_row([counthost, ip, macaddress, status])
     promiscuous_device_scanner_using_ip_address_stop_time=datetime.now()
-    output=open("promiscuous_ip_address_out.hop", "a")
+    output=open("output.hop", "a")
     output.truncate(0)
     output.write("Promiscuous Device Scanner using IP Address started at {}".format(promiscuous_device_scanner_using_ip_address_start_time))
     output.write("\n\nPromiscuous Mode Detection Using IP Address Result:\n")

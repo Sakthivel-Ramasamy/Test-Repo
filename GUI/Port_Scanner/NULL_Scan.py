@@ -22,7 +22,7 @@ def null_scan(dst_ip,dst_port,dst_timeout):
         return ("Error")
 
 def null_scan_port_scanner(ip, port_list, timeout):
-    output=open("null_scan_out.hop", "a")
+    output=open("output.hop", "a")
     output.truncate(0)
     null_scan_port_scanner_start_time=datetime.now()
     output.write("NULL Scan Port Scanner started at {}".format(null_scan_port_scanner_start_time))
