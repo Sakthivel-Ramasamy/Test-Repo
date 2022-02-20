@@ -13,6 +13,8 @@ def ip_spoof_ttl_checker(src, ttl):
         ttl_values[src] = icmp_pkt.ttl
     if abs(int(ttl_values[src]) - int(ttl)) > ip_spoofing_detection_threshold:
         output.write("Timestamp: {}\nMessage: Detected Possible Spoofed Packet from the IP Address {}\n\n".format(datetime.datetime.now(), src))
+        attack_output=open("attack.hop", "w")
+        attack_output.close()
 
 # Parses packets received and passes source IP 
 def ip_spoof_identifier(pkt):

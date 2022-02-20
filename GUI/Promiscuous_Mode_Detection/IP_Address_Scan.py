@@ -25,6 +25,8 @@ def promiscuous_device_scanner_using_ip_address(ip):
         countpromiscuoushost+=1
         #print(colored("The ip {}".format(ip) + " is in promiscuous mode", "white", "on_red", attrs=['bold']))
         status="Promiscuous Mode Suspected"
+        attack_output=open("attack.hop", "w")
+        attack_output.close()
     except:
         countnotpromiscuoushost+=1
         #print(colored("The ip {}".format(ip) + " is not in promiscuous mode", "white", "on_green", attrs=['bold']))

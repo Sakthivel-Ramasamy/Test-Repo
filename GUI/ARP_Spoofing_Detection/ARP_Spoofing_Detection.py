@@ -22,6 +22,8 @@ def arp_spoof_not_safe(a):
     output.write("\n\nARP Spoofing Detection Scanner ended at {}".format(arp_spoofing_detection_scanner_stop_time))
     output.write("\nTotal Scan Duration in Seconds = {}".format(abs(arp_spoofing_detection_scanner_stop_time-arp_spoofing_detection_scanner_start_time).total_seconds()))
     output.close()
+    attack_output=open("attack.hop", "w")
+    attack_output.close()
     exit_process()
 
 #function getting mac addrees by broadcasting the ARP msg packets 

@@ -30,6 +30,8 @@ def dns_spoof_identifier(packet):
                 output.write("\nTXID "+str(packet[DNS].id)+" Request "+packet[DNS].qd.qname.decode('utf-8')[:-1])
                 output.write("\nAttacker's IP Address: {}".format(str(ipAdds2)))
                 output.write("\nVictim's IP Address: {}\n\n".format(str(ipAdds)))
+                attack_output=open("attack.hop", "w")
+                attack_output.close()
 
 def dns_spoof_detector(interface):
     argParser = argparse.ArgumentParser(add_help=False)
