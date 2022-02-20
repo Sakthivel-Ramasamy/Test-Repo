@@ -1,8 +1,8 @@
 import datetime
+import json
 import os
 from scapy.all import *
 import sys
-from termcolor import colored
 
 #Start of DHCP Starvation Detection Scanner
 
@@ -77,7 +77,7 @@ if __name__=="__main__":
     dhcpdict={}
     dhcp_starvation_detection_timeout=int(input("\nEnter the Timeout Duration in seconds: "))
     dhcp_starvation_detection_threshold=int(input("\nEnter the DHCP DISCOVER Message Threshlod Value: "))
-    output=open("output.hop", "a")
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
     dhcp_starvation_detection_scanner_global_start_time=datetime.now()
     dhcp_starvation_detection_scanner_start_time=dhcp_starvation_detection_scanner_global_start_time

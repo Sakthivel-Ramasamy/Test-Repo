@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 from scapy.all import *
 
@@ -55,7 +56,7 @@ if __name__=="__main__":
     except ValueError:
         threshold=5
     print("\nWarning: This may slow down your system and it may not respond as expected...")
-    output=open("output.hop", "a")
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
     ip_spoof_detector(interface)
     output.close()

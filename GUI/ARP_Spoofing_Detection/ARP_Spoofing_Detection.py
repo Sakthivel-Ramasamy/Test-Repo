@@ -1,8 +1,8 @@
 import datetime
+import json
 import os
 from scapy.all import *
 import sys
-from termcolor import colored
 
 #Start of ARP Spoofing Detection Scanner
 
@@ -88,7 +88,7 @@ if __name__=="__main__":
     if len(interface)==0:
         interface=conf.iface
     arpcount=0
-    output=open("output.hop", "a")
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
     arp_spoofing_detection_scanner_start_time=datetime.now()
     arp_spoof_detector(interface) 

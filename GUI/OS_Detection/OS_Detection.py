@@ -1,5 +1,6 @@
 import datetime
 import ipaddress
+import json
 import nmap
 import os
 import prettytable
@@ -32,7 +33,7 @@ def os_detector(ip):
     except KeyError:
         print("\nSome Error Occurred...\nEither the Target IP Address is not active or Not able to reach the Target IP Address.\nPlease try again later...")
     os_detection_scanner_stop_time=datetime.now()
-    output=open("output.hop", "a")
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
     output.write("OS Detection Scanner started at {}".format(os_detection_scanner_start_time))
     output.write("\n\nOS Detection Results:\n")

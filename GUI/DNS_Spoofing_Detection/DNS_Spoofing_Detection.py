@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import json
 import os
 from scapy.all import *
 
@@ -60,7 +61,7 @@ if __name__=="__main__":
     if len(interface)==0:
         interface=conf.iface
     dnsMap={}
-    output=open("output.hop", "a")
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
     dns_spoof_detector(interface)
     output.close()
