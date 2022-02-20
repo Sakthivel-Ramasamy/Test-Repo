@@ -9,6 +9,6 @@ try:
     ipaddr=json_data["IP_Address"]
     ipaddress.ip_address(ipaddr)
 except ValueError:
-    output=open("error.hop", "w")
+    output=open(os.path.dirname(__file__)+"/../error.hop", "w")
     output.close()
     sys.exit()
