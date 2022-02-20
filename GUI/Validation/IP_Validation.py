@@ -2,7 +2,6 @@ import ipaddress
 import json
 import os
 import sys
-from black import out
 
 try:
     file=open(os.path.dirname(__file__)+"/../input.json", "r")
