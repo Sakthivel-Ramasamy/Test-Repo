@@ -62,7 +62,11 @@ def host_discovery_scanner_using_scapy(network):
             if macaddr[0:6] == macaddress[0:6]:
                 vendor=macaddr[7:].strip()
                 break
-        host_discovery_using_scapy_output_table.add_row([counthost, element[1].psrc, element[1].hwsrc, vendor])
+        if len(vendor)!=0:
+            host_discovery_using_scapy_output_table.add_row([counthost, element[1].psrc, element[1].hwsrc, vendor])
+        else:
+            vendor="Error Occurred"
+            host_discovery_using_scapy_output_table.add_row([counthost, element[1].psrc, element[1].hwsrc, vendor])
     host_discovery_scanner_using_scapy_stop_time=gettime()
     output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
