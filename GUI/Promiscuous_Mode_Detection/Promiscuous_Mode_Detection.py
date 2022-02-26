@@ -32,7 +32,7 @@ def promiscuous_device_scanner_using_ip_address(ip):
         countpromiscuoushost+=1
         #print(colored("The ip {}".format(ip) + " is in promiscuous mode", "white", "on_red", attrs=['bold']))
         status="Promiscuous Mode Suspected"
-        attack_output=open(os.path.dirname(__file__)+"/../attack.hop", "w")
+        attack_output=open(os.path.dirname(__file__)+"/../error.hop", "w")
         attack_output.close()
     except:
         countnotpromiscuoushost+=1
@@ -144,13 +144,15 @@ if __name__=="__main__":
     file=open(os.path.dirname(__file__)+"/../input.json", "r")
     json_data=json.load(file)
     feature=json_data["Method"]
-    # if feature=="Promiscuous Mode Detection":
-    #     if drop_down=="IP Address":
-    #         promiscuous_device_scanner_using_ip_address(ip)
-    #     elif drop_down=="Nmap":
-    #         promiscuous_devices_scanner_using_nmap(network)
-    #     elif drop_down="Scapy":
-    #         promiscuous_devices_scanner_using_scapy(network)
+    scan_ip=json_data["IP_Address"]
+    drop_down=json_data["Drop_Down"]
+    if feature=="Promiscuous Detection":
+        if drop_down=="IP Address Scan":
+            promiscuous_device_scanner_using_ip_address(scan_ip)
+        elif drop_down=="Nmap Subnet Scan":
+            promiscuous_devices_scanner_using_nmap(scan_ip)
+        elif drop_down=="Scapy Subnet Scan":
+            promiscuous_devices_scanner_using_scapy(scan_ip)
     sys.exit()
 
 #End of main Function

@@ -331,27 +331,25 @@ if __name__=="__main__":
     file=open(os.path.dirname(__file__)+"/../input.json", "r")
     json_data=json.load(file)
     feature=json_data["Method"]
-    # if feature=="Port Scanner":
-    #     if drop_down=="IP Address":
-    #         promiscuous_device_scanner_using_ip_address(ip)
-    #     elif drop_down=="Nmap":
-    #         promiscuous_devices_scanner_using_nmap(network)
-    #     elif drop_down="Scapy":
-    #         promiscuous_devices_scanner_using_scapy(network)
-
-    try:
-        port=input("\nEnter the Port(s) to Scan: ")
-    except ValueError:
-        print("\nNo Ports Entered...")
-        sys.exit()
-    try:
-        timeout=int(input("\nEnter the Timeout Duration (Default: 2): "))
-    except ValueError:
-        timeout=2
-    try:
-        verbose=int(input("\nEnter the Level of Verbosity [From 0 (almost mute) to 3 (verbose)] (Default: 0): "))
-    except ValueError:
-        verbose=0
+    scan_ip=json_data["IP_Address"]
+    drop_down=json_data["Drop_Down"]
+    port=json_data["Port"]
+    timeout=int(json_data["Time_Out"])
+    verbose=int(json_data["Verbose"])
+    
+    # try:
+    #     port=input("\nEnter the Port(s) to Scan: ")
+    # except ValueError:
+    #     print("\nNo Ports Entered...")
+    #     sys.exit()
+    # try:
+    #     timeout=int(input("\nEnter the Timeout Duration (Default: 2): "))
+    # except ValueError:
+    #     timeout=2
+    # try:
+    #     verbose=int(input("\nEnter the Level of Verbosity [From 0 (almost mute) to 3 (verbose)] (Default: 0): "))
+    # except ValueError:
+    #     verbose=0
     conf.verb=verbose
     port_list=[]
     if "," in port:
@@ -373,7 +371,28 @@ if __name__=="__main__":
             temp_ports.append(int(item))
     port_list = temp_ports
     port_list.sort()
+    
     # all_methods_port_scanner(ip, port_list, timeout)
+    if feature=="Port Scanner":
+        if drop_down=="TCP Connect Scan":
+            tcp_connect_scan_port_scanner(scan_ip, port_list, timeout)
+        elif drop_down=="TCP Stealth Scan":
+            tcp_stealth_scan_port_scanner(scan_ip, port_list, timeout)
+        elif drop_down=="TCP ACK Scan":
+            tcp_ack_scan_port_scanner(scan_ip, port_list, timeout)
+        elif drop_down=="TCP Window Scan":
+            tcp_window_scan_port_scanner(scan_ip, port_list, timeout)
+        elif drop_down=="XMAS Scan":
+            xmas_scan_port_scanner(scan_ip, port_list, timeout)
+        elif drop_down=="FIN Scan":
+            fin_scan_port_scanner(scan_ip, port_list, timeout)
+        elif drop_down=="NULL Scan":
+            null_scan_port_scanner(scan_ip, port_list, timeout)
+        elif drop_down=="UDP Scan":
+            udp_scan_port_scanner(scan_ip, port_list, timeout)
+        elif drop_down=="All":
+            all_methods_port_scanner(scan_ip, port_list, timeout)
+    
     sys.exit()
 
 #End of main Function

@@ -65,22 +65,12 @@ if __name__=="__main__":
 
     #Start of Color Code
 
-    os_type=sys.platform
-    if os_type=='win32':
-        os.system('color')
-    
-    #End of Color Code
-
-    try:
-        ipaddr=input("\nEnter the Target IP Address (Default: 127.0.0.1): ")
-        if len(ipaddr)==0:
-            ip='127.0.0.1'
-        else:
-            ip=ipaddr
-        ipaddress.ip_address(ip)
-        os_detector(ip)
-    except ValueError:
-        print("\nInvalid IP Address Entered...")
-        exit_process()
+    file=open(os.path.dirname(__file__)+"/../input.json", "r")
+    json_data=json.load(file)
+    feature=json_data["Method"]
+    scan_ip=json_data["IP_Address"]
+    if feature=="OS Detection":
+        os_detector(scan_ip)
+    sys.exit()
 
 #End of main Function

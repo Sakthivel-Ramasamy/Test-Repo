@@ -29,7 +29,7 @@ def arp_spoof_not_safe(a):
     output.write("\n\nARP Spoofing Detection Scanner ended at {}".format(arp_spoofing_detection_scanner_stop_time))
     output.write("\nTotal Scan Duration in Seconds = {}".format(abs(arp_spoofing_detection_scanner_stop_time-arp_spoofing_detection_scanner_start_time).total_seconds()))
     output.close()
-    attack_output=open("attack.hop", "w")
+    attack_output=open(os.path.dirname(__file__)+"/../error.hop", "w")
     attack_output.close()
     exit_process()
 
@@ -68,7 +68,11 @@ def arp_spoof_identifier(packet):
             pass
 
 def arp_spoof_detector(interface):
-    sniff(prn=arp_spoof_identifier, iface=interface, store=False)
+    try:
+        sniff(prn=arp_spoof_identifier, iface=interface, store=False)
+    except:
+        interface=conf.iface
+        sniff(prn=arp_spoof_identifier, iface=interface, store=False)
 
 #End of ARP Spoofing Detection Scanner
 
@@ -83,21 +87,16 @@ def exit_process():
 
 if __name__=="__main__":
 
-    #Start of Color Code
-
-    os_type=sys.platform
-    if os_type=='win32':
-        os.system('color')
-    
-    #End of Color Code
-
-    interface=input("\nEnter the Interface of the Host (Default: eth0): ")
-    if len(interface)==0:
-        interface=conf.iface
-    arpcount=0
-    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
-    output.truncate(0)
-    arp_spoofing_detection_scanner_start_time=gettime()
-    arp_spoof_detector(interface) 
+    file=open(os.path.dirname(__file__)+"/../input.json", "r")
+    json_data=json.load(file)
+    feature=json_data["Method"]
+    scan_interface=json_data["IP_Address"]
+    if feature=="ARP Detection":
+        arpcount=0    
+        output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+        output.truncate(0)
+        arp_spoofing_detection_scanner_start_time=gettime()
+        arp_spoof_detector(scan_interface) 
+    sys.exit()
 
 #End of main Function

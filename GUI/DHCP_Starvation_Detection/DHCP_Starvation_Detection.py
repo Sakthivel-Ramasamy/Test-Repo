@@ -24,7 +24,7 @@ def dhcp_starvation_time_checker(time, newtime):
     # If the hour is the same but not the minutes and there are in range of 10 mins send the frame
     if (time == newtime) or ((hour1 == hour2) and (int(min2) - int(min1) in range(dhcp_starvation_detection_timeout))):
         output.write("\n\nDHCP Count = {}\nTimestamp: {}\nMessage: Possible DHCP Starvation Attack Detected".format(dhcpcount, gettime()))
-        attack_output=open("attack.hop", "w")
+        attack_output=open(os.path.dirname(__file__)+"/../error.hop", "w")
         attack_output.close()
         return 1
     else:
