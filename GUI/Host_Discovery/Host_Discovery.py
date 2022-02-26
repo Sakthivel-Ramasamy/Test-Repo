@@ -4,6 +4,7 @@ import json
 import nmap
 import os
 import prettytable
+from scapy.all import *
 import sys
 
 #Start of Host Discovery Scanner
