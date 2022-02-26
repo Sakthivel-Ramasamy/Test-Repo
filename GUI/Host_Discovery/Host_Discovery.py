@@ -37,6 +37,8 @@ def host_discovery_scanner_using_nmap(network):
             vendor="Might be a local interface /\nNot running as a super user /\nError in getting it..."
         host_discovery_using_nmap_output_table.add_row([counthost, host, macaddress, vendor])
     host_discovery_scanner_using_nmap_stop_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("Host Discovery using Nmap Scan started at {}".format(host_discovery_scanner_using_nmap_start_time))
     output.write("\n\nHost Discovery Using Nmap Result:\n")
     output.write(str(host_discovery_using_nmap_output_table))
@@ -62,6 +64,8 @@ def host_discovery_scanner_using_scapy(network):
                 break
         host_discovery_using_scapy_output_table.add_row([counthost, element[1].psrc, element[1].hwsrc, vendor])
     host_discovery_scanner_using_scapy_stop_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("Host Discovery using Scay Scan started at {}".format(host_discovery_scanner_using_scapy_start_time))
     output.write("\n\nHost Discovery Using Scapy Result:\n")
     output.write(str(host_discovery_using_scapy_output_table))
@@ -82,8 +86,6 @@ if __name__=="__main__":
     network=json_data["IP_Address"]
     drop_down=json_data["Drop_Down"]
     if feature=="Host Discovery":
-        output=open(os.path.dirname(__file__)+"/../output.hop", "a")
-        output.truncate(0)
         if drop_down=="Nmap":
             host_discovery_scanner_using_nmap(network)
         elif drop_down=="Scapy":

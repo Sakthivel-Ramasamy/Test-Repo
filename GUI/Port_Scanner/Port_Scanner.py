@@ -133,6 +133,8 @@ def udp_scan(dst_ip,dst_port,dst_timeout):
 
 def tcp_connect_scan_port_scanner(ip, port_list, timeout):
     tcp_connect_scan_port_scanner_start_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("TCP Connect Scan Port Scanner started at {}".format(tcp_connect_scan_port_scanner_start_time))
     tcp_connect_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP Connect Scan"])    
     output.write("\n\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
@@ -150,6 +152,8 @@ def tcp_connect_scan_port_scanner(ip, port_list, timeout):
 
 def tcp_stealth_scan_port_scanner(ip, port_list, timeout):
     tcp_stealth_scan_port_scanner_start_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("TCP Stealth Scan port Scanner started at {}".format(tcp_stealth_scan_port_scanner_start_time))
     tcp_stealth_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP Stealth Scan"])
     output.write("\n\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))
@@ -167,6 +171,8 @@ def tcp_stealth_scan_port_scanner(ip, port_list, timeout):
 
 def tcp_ack_scan_port_scanner(ip, port_list, timeout):
     tcp_ack_scan_port_scanner_start_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("TCP ACK Scan Port Scanner started at {}".format(tcp_ack_scan_port_scanner_start_time))
     tcp_ack_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP ACK Scan"])
     output.write("\n\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
@@ -184,6 +190,8 @@ def tcp_ack_scan_port_scanner(ip, port_list, timeout):
 
 def tcp_window_scan_port_scanner(ip, port_list, timeout):
     tcp_window_scan_port_scanner_start_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("TCP Window Scan Port Scanner started at {}".format(tcp_window_scan_port_scanner_start_time))
     tcp_window_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP Window Scan"])
     output.write("\n\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
@@ -201,6 +209,8 @@ def tcp_window_scan_port_scanner(ip, port_list, timeout):
 
 def xmas_scan_port_scanner(ip, port_list, timeout):
     xmas_scan_port_scanner_start_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("XMAS Scan Port Scanner started at {}".format(xmas_scan_port_scanner_start_time))
     xmas_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "XMAS Scan"])
     output.write("\n\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
@@ -218,6 +228,8 @@ def xmas_scan_port_scanner(ip, port_list, timeout):
 
 def fin_scan_port_scanner(ip, port_list, timeout):
     fin_scan_port_scanner_start_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("FIN Scan Port Scanner started at {}".format(fin_scan_port_scanner_start_time))
     fin_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "FIN Scan"])
     output.write("\n\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
@@ -235,6 +247,8 @@ def fin_scan_port_scanner(ip, port_list, timeout):
 
 def null_scan_port_scanner(ip, port_list, timeout):
     null_scan_port_scanner_start_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("NULL Scan Port Scanner started at {}".format(null_scan_port_scanner_start_time))
     null_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "NULL Scan"])
     output.write("\n\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
@@ -252,6 +266,8 @@ def null_scan_port_scanner(ip, port_list, timeout):
 
 def udp_scan_port_scanner(ip, port_list, timeout):
     udp_scan_port_scanner_start_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("UDP Scan Port Scanner started at {}".format(udp_scan_port_scanner_start_time))
     udp_scan_port_scanner_output_table = prettytable.PrettyTable(["Port", "UDP Scan"])
     output.write("\n\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
@@ -269,6 +285,8 @@ def udp_scan_port_scanner(ip, port_list, timeout):
 
 def all_methods_port_scanner(ip, port_list, timeout):
     all_methods_port_scanner_start_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("Port Scanner (All Methods) started at {}".format(all_methods_port_scanner_start_time))
     all_methods_port_scanner_output_table = prettytable.PrettyTable(["Port", "TCP Connect Scan", "TCP Stealth Scan", "TCP ACK Scan", "TCP Window Scan", "XMAS Scan", "FIN Scan", "NULL Scan", "UDP Scan"])
     output.write("\n\n[+] Starting the Port Scanner for the Target: {} for the Port(s): {}...".format(ip, port_list))    
@@ -357,8 +375,6 @@ if __name__=="__main__":
     
     # all_methods_port_scanner(ip, port_list, timeout)
     if feature=="Port Scanner":
-        output=open(os.path.dirname(__file__)+"/../output.hop", "a")
-        output.truncate(0)
         if drop_down=="TCP Connect Scan":
             tcp_connect_scan_port_scanner(scan_ip, port_list, timeout)
         elif drop_down=="TCP Stealth Scan":

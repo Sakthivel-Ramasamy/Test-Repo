@@ -16,6 +16,8 @@ def gettime():
 
 def arp_spoof_safe():
     arp_spoofing_detection_scanner_stop_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("ARP Spoofing Detection Scan started at {}".format(arp_spoofing_detection_scanner_start_time))
     output.write("\n\nTimestamp: {}\nMessage: You are safe".format(gettime()))
     output.write("\n\nARP Spoofing Detection Scanner ended at {}".format(arp_spoofing_detection_scanner_stop_time))
@@ -25,6 +27,8 @@ def arp_spoof_safe():
 
 def arp_spoof_not_safe(a):
     arp_spoofing_detection_scanner_stop_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("ARP Spoofing Detection Scan started at {}".format(arp_spoofing_detection_scanner_start_time))
     output.write("\n\nTimestamp: {}\nMessage: You are under attack\nVictim's MAC Address: {}\nAttacker's MAC Address: {}".format(gettime(), a[0], a[1]))
     output.write("\n\nARP Spoofing Detection Scanner ended at {}".format(arp_spoofing_detection_scanner_stop_time))
@@ -94,8 +98,6 @@ if __name__=="__main__":
     scan_interface=json_data["Interface"]
     arpcount=0    
     if feature=="ARP Detection":
-        output=open(os.path.dirname(__file__)+"/../output.hop", "a")
-        output.truncate(0)
         arp_spoofing_detection_scanner_start_time=gettime()
         arp_spoof_detector(scan_interface) 
     sys.exit()

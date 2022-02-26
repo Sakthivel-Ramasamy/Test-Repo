@@ -40,6 +40,8 @@ def os_detector(ip):
     except KeyError:
         print("\nSome Error Occurred...\nEither the Target IP Address is not active or Not able to reach the Target IP Address.\nPlease try again later...")
     os_detection_scanner_stop_time=gettime()
+    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+    output.truncate(0)
     output.write("OS Detection Scanner started at {}".format(os_detection_scanner_start_time))
     output.write("\n\nOS Detection Results:\n")
     output.write(str(os_detection_output_table))
@@ -68,8 +70,6 @@ if __name__=="__main__":
     feature=json_data["Method"]
     scan_ip=json_data["IP_Address"]
     if feature=="OS Detection":
-        output=open(os.path.dirname(__file__)+"/../output.hop", "a")
-        output.truncate(0)
         os_detector(scan_ip)
     sys.exit()
 
