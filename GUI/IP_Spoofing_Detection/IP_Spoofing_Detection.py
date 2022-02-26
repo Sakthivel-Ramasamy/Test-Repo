@@ -62,7 +62,6 @@ if __name__=="__main__":
         threshold=int(input("\nEnter the Threshold Value (Default: 5): "))
     except ValueError:
         threshold=5
-    print("\nWarning: This may slow down your system and it may not respond as expected...")
     output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
     ip_spoof_detector(interface)
