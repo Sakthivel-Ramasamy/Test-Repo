@@ -1,5 +1,6 @@
 import datetime
 import json
+import nmap
 import os
 from scapy.all import *
 import sys

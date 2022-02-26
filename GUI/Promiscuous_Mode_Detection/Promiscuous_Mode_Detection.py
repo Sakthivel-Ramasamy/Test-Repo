@@ -1,6 +1,7 @@
 import datetime
 import ipaddress
 import json
+import nmap
 import os
 import prettytable
 from scapy.all import *
@@ -40,8 +41,6 @@ def promiscuous_device_scanner_using_ip_address(ip):
         status="No Promiscuous Mode Suspected"
     promiscuous_mode_detection_using_ip_address_output_table.add_row([counthost, ip, macaddress, status])
     promiscuous_device_scanner_using_ip_address_stop_time=gettime()
-    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
-    output.truncate(0)
     output.write("Promiscuous Device Scanner using IP Address started at {}".format(promiscuous_device_scanner_using_ip_address_start_time))
     output.write("\n\nPromiscuous Mode Detection Using IP Address Result:\n")
     output.write(str(promiscuous_mode_detection_using_ip_address_output_table))
@@ -80,8 +79,6 @@ def promiscuous_devices_scanner_using_nmap(network):
             status="No Promiscuous Mode Suspected"
         promiscuous_mode_detection_using_nmap_output_table.add_row([counthost, ip, macaddress, status])
     promiscuous_devices_scanner_using_nmap_stop_time=gettime()
-    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
-    output.truncate(0)
     output.write("Promiscuous Devices Scanner using Nmap started at {}".format(promiscuous_devices_scanner_using_nmap_start_time))
     output.write("\n\nPromiscuous Mode Detection Using Nmap Results:\n")
     output.write(str(promiscuous_mode_detection_using_nmap_output_table))
@@ -117,8 +114,6 @@ def promiscuous_devices_scanner_using_scapy(network):
             status="No Promiscuous Mode Suspected"
         promiscuous_mode_detection_using_scapy_output_table.add_row([counthost, ip, macaddress, status])
     promiscuous_devices_scanner_using_scapy_stop_time=gettime()
-    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
-    output.truncate(0)
     output.write("Promiscuous Devices Scanner using Scapy started at {}".format(promiscuous_devices_scanner_using_scapy_start_time))
     output.write("\n\nPromiscuous Mode Detection Using Scapy Results:\n")
     output.write(str(promiscuous_mode_detection_using_scapy_output_table))
@@ -147,6 +142,8 @@ if __name__=="__main__":
     scan_ip=json_data["IP_Address"]
     drop_down=json_data["Drop_Down"]
     if feature=="Promiscuous Detection":
+        output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+        output.truncate(0)
         if drop_down=="IP Address Scan":
             promiscuous_device_scanner_using_ip_address(scan_ip)
         elif drop_down=="Nmap Subnet Scan":
