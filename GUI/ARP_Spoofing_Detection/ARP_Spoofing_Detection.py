@@ -70,7 +70,7 @@ def arp_spoof_identifier(packet):
 def arp_spoof_detector(interface):
     try:
         sniff(prn=arp_spoof_identifier, iface=interface, store=False)
-    except:
+    except Exception:
         interface=conf.iface
         sniff(prn=arp_spoof_identifier, iface=interface, store=False)
 

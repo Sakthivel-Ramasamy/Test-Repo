@@ -20,7 +20,9 @@ def ip_spoof_ttl_checker(src, ttl):
         icmp_pkt = sr1(IP(dst=src)/ICMP(), retry=0, verbose=0, timeout=1)
         ttl_values[src] = icmp_pkt.ttl
     if abs(int(ttl_values[src]) - int(ttl)) > ip_spoofing_detection_threshold:
+        output=open(os.path.dirname(__file__)+"/../output.hop", "a")
         output.write("Timestamp: {}\nMessage: Detected Possible Spoofed Packet from the IP Address {}\n\n".format(gettime(), src))
+        output.close()
         attack_output=open(os.path.dirname(__file__)+"/../error.hop", "w")
         attack_output.close()
 
@@ -38,7 +40,11 @@ def ip_spoof_identifier(pkt):
 # Grabs the src IP and TTL from the network traffic then compares the TTL with an ICMP echo reply. 
 # If the difference in TTL is greater than THRESHOLD a warning will be printed.
 def ip_spoof_detector(interface):
-	sniff(prn=ip_spoof_identifier, iface=interface, store=False)
+    try:
+        sniff(prn=ip_spoof_identifier, iface=interface, store=False)
+    except Exception:
+        interface=conf.iface
+        sniff(prn=ip_spoof_identifier, iface=interface, store=False)
 
 #End of IP Spoofing Detection Scanner
 
@@ -64,7 +70,7 @@ if __name__=="__main__":
         threshold=5
     output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
-    ip_spoof_detector(interface)
     output.close()
+    ip_spoof_detector(interface)
 
 #End of main Function

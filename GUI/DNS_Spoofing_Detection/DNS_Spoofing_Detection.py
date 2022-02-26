@@ -34,10 +34,12 @@ def dns_spoof_identifier(packet):
             ipAdds2= dns_spoof_ip_identifier(firstPacket)
             #check if the MAC address is same. if not raise an alarm
             if macAddr2 != firstPacket[Ether].src:
+                output=open(os.path.dirname(__file__)+"/../output.hop", "a")
                 output.write("Timestamp: {}\nMessage: Possible DNS Poisoning Attempt Detected".format(gettime()))
                 output.write("\nTXID "+str(packet[DNS].id)+" Request "+packet[DNS].qd.qname.decode('utf-8')[:-1])
                 output.write("\nAttacker's IP Address: {}".format(str(ipAdds2)))
                 output.write("\nVictim's IP Address: {}\n\n".format(str(ipAdds)))
+                output.close()
                 attack_output=open(os.path.dirname(__file__)+"/../error.hop", "w")
                 attack_output.close()
 
@@ -48,7 +50,11 @@ def dns_spoof_detector(interface):
     filterExp = ''
     if args.fExp is None:
         filterExp = 'port 53'
-    sniff(prn=dns_spoof_identifier, iface=interface, filter=filterExp)
+    try:
+        sniff(prn=dns_spoof_identifier, iface=interface, filter=filterExp)
+    except Exception:
+        interface=conf.iface
+        sniff(prn=dns_spoof_identifier, iface=interface, filter=filterExp)
 
 #End of DNS Spoofing Detection Scanner
 
@@ -70,7 +76,7 @@ if __name__=="__main__":
     dnsMap={}
     output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
-    dns_spoof_detector(interface)
     output.close()
+    dns_spoof_detector(interface)
 
 #End of main Function
