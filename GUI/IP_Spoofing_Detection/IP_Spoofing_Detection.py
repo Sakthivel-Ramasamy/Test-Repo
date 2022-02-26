@@ -5,6 +5,13 @@ from scapy.all import *
 
 #Start of IP Spoofing Detection Scanner
 
+def gettime():
+    try:
+        current_time=datetime.datetime.now()
+    except Exception:
+        current_time=datetime.now()
+    return current_time
+
 # Checks if the TTL is within the maximum threshold
 def ip_spoof_ttl_checker(src, ttl):
     global ttl_values
@@ -13,7 +20,7 @@ def ip_spoof_ttl_checker(src, ttl):
         icmp_pkt = sr1(IP(dst=src)/ICMP(), retry=0, verbose=0, timeout=1)
         ttl_values[src] = icmp_pkt.ttl
     if abs(int(ttl_values[src]) - int(ttl)) > ip_spoofing_detection_threshold:
-        output.write("Timestamp: {}\nMessage: Detected Possible Spoofed Packet from the IP Address {}\n\n".format(datetime.datetime.now(), src))
+        output.write("Timestamp: {}\nMessage: Detected Possible Spoofed Packet from the IP Address {}\n\n".format(gettime(), src))
         attack_output=open("attack.hop", "w")
         attack_output.close()
 

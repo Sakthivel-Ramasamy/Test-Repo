@@ -8,6 +8,13 @@ import sys
 
 #Start of Promiscuous Mode Detection Scanner
 
+def gettime():
+    try:
+        current_time=datetime.datetime.now()
+    except Exception:
+        current_time=datetime.now()
+    return current_time
+
 def promiscuous_response_identifier(ip):
     a=Ether(dst="FF:FF:FF:FF:FF:FE")/ARP(pdst=ip)
     result = srp(a,timeout=3,verbose=False)[0]
@@ -17,7 +24,7 @@ def promiscuous_device_scanner_using_ip_address(ip):
     counthost=1
     countpromiscuoushost=0
     countnotpromiscuoushost=0
-    promiscuous_device_scanner_using_ip_address_start_time=datetime.now()
+    promiscuous_device_scanner_using_ip_address_start_time=gettime()
     promiscuous_mode_detection_using_ip_address_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Status"])
     macaddress="Error"
     try:
@@ -32,7 +39,7 @@ def promiscuous_device_scanner_using_ip_address(ip):
         #print(colored("The ip {}".format(ip) + " is not in promiscuous mode", "white", "on_green", attrs=['bold']))
         status="No Promiscuous Mode Suspected"
     promiscuous_mode_detection_using_ip_address_output_table.add_row([counthost, ip, macaddress, status])
-    promiscuous_device_scanner_using_ip_address_stop_time=datetime.now()
+    promiscuous_device_scanner_using_ip_address_stop_time=gettime()
     output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
     output.write("Promiscuous Device Scanner using IP Address started at {}".format(promiscuous_device_scanner_using_ip_address_start_time))
@@ -43,7 +50,7 @@ def promiscuous_device_scanner_using_ip_address(ip):
     output.close()
 
 def promiscuous_devices_scanner_using_nmap(network):
-    promiscuous_devices_scanner_using_nmap_start_time=datetime.now()
+    promiscuous_devices_scanner_using_nmap_start_time=gettime()
     nm=nmap.PortScanner()
     nm.scan(hosts=network, arguments='-sn')
     host_list=list(nm.all_hosts())
@@ -72,7 +79,7 @@ def promiscuous_devices_scanner_using_nmap(network):
             #print(colored("The ip {}".format(ip) + " is not in promiscuous mode", "white", "on_green", attrs=['bold']))
             status="No Promiscuous Mode Suspected"
         promiscuous_mode_detection_using_nmap_output_table.add_row([counthost, ip, macaddress, status])
-    promiscuous_devices_scanner_using_nmap_stop_time=datetime.now()
+    promiscuous_devices_scanner_using_nmap_stop_time=gettime()
     output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
     output.write("Promiscuous Devices Scanner using Nmap started at {}".format(promiscuous_devices_scanner_using_nmap_start_time))
@@ -85,7 +92,7 @@ def promiscuous_devices_scanner_using_nmap(network):
     output.close()
 
 def promiscuous_devices_scanner_using_scapy(network):
-    promiscuous_devices_scanner_using_scapy_start_time=datetime.now()
+    promiscuous_devices_scanner_using_scapy_start_time=gettime()
     a=Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=network)
     result=srp(a,timeout=3,verbose=False)[0]
     counthost=0
@@ -109,7 +116,7 @@ def promiscuous_devices_scanner_using_scapy(network):
             #print(colored("The ip {}".format(ip) + " is not in promiscuous mode", "white", "on_green", attrs=['bold']))
             status="No Promiscuous Mode Suspected"
         promiscuous_mode_detection_using_scapy_output_table.add_row([counthost, ip, macaddress, status])
-    promiscuous_devices_scanner_using_scapy_stop_time=datetime.now()
+    promiscuous_devices_scanner_using_scapy_stop_time=gettime()
     output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
     output.write("Promiscuous Devices Scanner using Scapy started at {}".format(promiscuous_devices_scanner_using_scapy_start_time))

@@ -6,6 +6,13 @@ from scapy.all import *
 
 #Start of DNS Spoofing Detection Scanner
 
+def gettime():
+    try:
+        current_time=datetime.datetime.now()
+    except Exception:
+        current_time=datetime.now()
+    return current_time
+
 def dns_spoof_ip_identifier(packet):
     ipAdds = []
     ancount = packet[DNS].ancount
@@ -27,7 +34,7 @@ def dns_spoof_identifier(packet):
             ipAdds2= dns_spoof_ip_identifier(firstPacket)
             #check if the MAC address is same. if not raise an alarm
             if macAddr2 != firstPacket[Ether].src:
-                output.write("Timestamp: {}\nMessage: Possible DNS Poisoning Attempt Detected".format(datetime.now()))
+                output.write("Timestamp: {}\nMessage: Possible DNS Poisoning Attempt Detected".format(gettime()))
                 output.write("\nTXID "+str(packet[DNS].id)+" Request "+packet[DNS].qd.qname.decode('utf-8')[:-1])
                 output.write("\nAttacker's IP Address: {}".format(str(ipAdds2)))
                 output.write("\nVictim's IP Address: {}\n\n".format(str(ipAdds)))

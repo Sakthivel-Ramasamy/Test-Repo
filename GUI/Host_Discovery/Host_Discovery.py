@@ -9,9 +9,16 @@ import sys
 
 #Start of Host Discovery Scanner
 
+def gettime():
+    try:
+        current_time=datetime.datetime.now()
+    except Exception:
+        current_time=datetime.now()
+    return current_time
+
 def host_discovery_scanner_using_nmap(network):
     counthost=0
-    host_discovery_scanner_using_nmap_start_time=datetime.datetime.now()
+    host_discovery_scanner_using_nmap_start_time=gettime()
     nm=nmap.PortScanner()
     nm.scan(hosts=network, arguments='-sn')
     host_list=list(nm.all_hosts())
@@ -29,12 +36,10 @@ def host_discovery_scanner_using_nmap(network):
         except:
             vendor="Might be a local interface /\nNot running as a super user /\nError in getting it..."
         host_discovery_using_nmap_output_table.add_row([counthost, host, macaddress, vendor])
-    host_discovery_scanner_using_nmap_stop_time=datetime.datetime.now()
+    host_discovery_scanner_using_nmap_stop_time=gettime()
     output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
     output.write("Host Discovery using Nmap Scan started at {}".format(host_discovery_scanner_using_nmap_start_time))
-    output.write("\n\nScanning Please Wait...")
-    output.write("\n(Note: This may take some time)")
     output.write("\n\nHost Discovery Using Nmap Result:\n")
     output.write(str(host_discovery_using_nmap_output_table))
     output.write("\n\nTotal {} hosts are alive in the given network {}".format(counthost, network))    
@@ -44,7 +49,7 @@ def host_discovery_scanner_using_nmap(network):
 
 def host_discovery_scanner_using_scapy(network):
     counthost=0
-    host_discovery_scanner_using_scapy_start_time=datetime.now()
+    host_discovery_scanner_using_scapy_start_time=gettime()
     a=Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.0/24")
     result=srp(a,timeout=3,verbose=False)[0]
     host_discovery_using_scapy_output_table = prettytable.PrettyTable(["Number", "IP Address", "MAC Address", "Vendor"])
@@ -52,18 +57,16 @@ def host_discovery_scanner_using_scapy(network):
         counthost+=1
         macaddress=element[1].hwsrc
         macaddress=macaddress.replace(":", "").replace("-", "").replace(".","").upper()
-        macaddress_file_contents=open("Mac-Vendors", "r").read()
+        macaddress_file_contents=open(os.path.dirname(__file__)+"/../Mac-Vendors", "r").read()
         for macaddr in macaddress_file_contents.split("\n"):
             if macaddr[0:6] == macaddress[0:6]:
                 vendor=macaddr[7:].strip()
                 break
         host_discovery_using_scapy_output_table.add_row([counthost, element[1].psrc, element[1].hwsrc, vendor])
-    host_discovery_scanner_using_scapy_stop_time=datetime.now()
+    host_discovery_scanner_using_scapy_stop_time=gettime()
     output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
     output.write("Host Discovery using Scay Scan started at {}".format(host_discovery_scanner_using_scapy_start_time))
-    output.write("\n\nScanning Please Wait...")
-    output.write("\n(Note: This may take negligible time)")
     output.write("\n\nHost Discovery Using Scapy Result:\n")
     output.write(str(host_discovery_using_scapy_output_table))
     output.write("\n\nTotal {} hosts are alive in the given network {}".format(counthost, network))

@@ -6,19 +6,26 @@ import sys
 
 #Start of ARP Spoofing Detection Scanner
 
+def gettime():
+    try:
+        current_time=datetime.datetime.now()
+    except Exception:
+        current_time=datetime.now()
+    return current_time
+
 def arp_spoof_safe():
-    arp_spoofing_detection_scanner_stop_time=datetime.now()
+    arp_spoofing_detection_scanner_stop_time=gettime()
     output.write("ARP Spoofing Detection Scan started at {}".format(arp_spoofing_detection_scanner_start_time))
-    output.write("\n\nTimestamp: {}\nMessage: You are safe".format(datetime.now()))
+    output.write("\n\nTimestamp: {}\nMessage: You are safe".format(gettime()))
     output.write("\n\nARP Spoofing Detection Scanner ended at {}".format(arp_spoofing_detection_scanner_stop_time))
     output.write("\nTotal Scan Duration in Seconds = {}".format(abs(arp_spoofing_detection_scanner_stop_time-arp_spoofing_detection_scanner_start_time).total_seconds()))
     output.close()
     exit_process()
 
 def arp_spoof_not_safe(a):
-    arp_spoofing_detection_scanner_stop_time=datetime.now()
+    arp_spoofing_detection_scanner_stop_time=gettime()
     output.write("ARP Spoofing Detection Scan started at {}".format(arp_spoofing_detection_scanner_start_time))
-    output.write("\n\nTimestamp: {}\nMessage: You are under attack\nVictim's MAC Address: {}\nAttacker's MAC Address: {}".format(datetime.now(), a[0], a[1]))
+    output.write("\n\nTimestamp: {}\nMessage: You are under attack\nVictim's MAC Address: {}\nAttacker's MAC Address: {}".format(gettime(), a[0], a[1]))
     output.write("\n\nARP Spoofing Detection Scanner ended at {}".format(arp_spoofing_detection_scanner_stop_time))
     output.write("\nTotal Scan Duration in Seconds = {}".format(abs(arp_spoofing_detection_scanner_stop_time-arp_spoofing_detection_scanner_start_time).total_seconds()))
     output.close()
@@ -90,7 +97,7 @@ if __name__=="__main__":
     arpcount=0
     output=open(os.path.dirname(__file__)+"/../output.hop", "a")
     output.truncate(0)
-    arp_spoofing_detection_scanner_start_time=datetime.now()
+    arp_spoofing_detection_scanner_start_time=gettime()
     arp_spoof_detector(interface) 
 
 #End of main Function
