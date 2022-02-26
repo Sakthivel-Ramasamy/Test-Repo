@@ -14,7 +14,7 @@ def gettime():
     return current_time
 
 def dhcp_starvation_time_checker(time, newtime):
-    global dhcp_starvation_timeout
+    global dhcp_starvation_detection_timeout
     hour1 = time.split(":")[0]
     hour2 = newtime.split(":")[0]
     min1 = time.split(":")[1]
@@ -76,27 +76,22 @@ def exit_process():
 
 if __name__=="__main__":
 
-    #Start of Color Code
-
-    os_type=sys.platform
-    if os_type=='win32':
-        os.system('color')
-    
-    #End of Color Code
-
-    interface=input("\nEnter the Interface of the Host (Default: eth0): ")
-    if len(interface)==0:
-        interface=conf.iface
+    file=open(os.path.dirname(__file__)+"/../input.json", "r")
+    json_data=json.load(file)
+    feature=json_data["Method"]
+    scan_interface=json_data["Interface"]
+    dhcp_starvation_detection_timeout=json_data["Timeout"]
+    dhcp_starvation_detection_threshold=json_data["Threshold"]
     dhcpcount=0
     dhcpdict={}
-    dhcp_starvation_detection_timeout=int(input("\nEnter the Timeout Duration in seconds: "))
-    dhcp_starvation_detection_threshold=int(input("\nEnter the DHCP DISCOVER Message Threshlod Value: "))
-    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
-    output.truncate(0)
-    dhcp_starvation_detection_scanner_global_start_time=gettime()
-    dhcp_starvation_detection_scanner_start_time=dhcp_starvation_detection_scanner_global_start_time
-    output.write("DHCP Starvation Detection Scanner started at {}".format(dhcp_starvation_detection_scanner_global_start_time))
-    output.close()
-    dhcp_starvation_detector(interface)
+    if feature=="DHCP Starvation":
+        output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+        output.truncate(0)
+        dhcp_starvation_detection_scanner_global_start_time=gettime()
+        dhcp_starvation_detection_scanner_start_time=dhcp_starvation_detection_scanner_global_start_time
+        output.write("DHCP Starvation Detection Scanner started at {}".format(dhcp_starvation_detection_scanner_global_start_time))
+        output.close()
+        dhcp_starvation_detector(scan_interface)
+    sys.exit() 
 
 #End of main Function

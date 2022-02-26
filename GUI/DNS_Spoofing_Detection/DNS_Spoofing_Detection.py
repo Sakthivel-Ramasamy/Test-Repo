@@ -62,21 +62,17 @@ def dns_spoof_detector(interface):
 
 if __name__=="__main__":
 
-    #Start of Color Code
-
-    os_type=sys.platform
-    if os_type=='win32':
-        os.system('color')
-    
-    #End of Color Code
-
-    interface=input("\nEnter the Interface of the Host (Default: eth0): ")
-    if len(interface)==0:
-        interface=conf.iface
+    file=open(os.path.dirname(__file__)+"/../input.json", "r")
+    json_data=json.load(file)
+    feature=json_data["Method"]
+    scan_interface=json_data["Interface"]
     dnsMap={}
-    output=open(os.path.dirname(__file__)+"/../output.hop", "a")
-    output.truncate(0)
-    output.close()
-    dns_spoof_detector(interface)
+    if feature=="DNS Detection":
+        output=open(os.path.dirname(__file__)+"/../output.hop", "a")
+        output.truncate(0)
+        output.write("DNS Spoofing Detection Results:\n\n")
+        output.close()
+        dns_spoof_detector(scan_interface)
+    sys.exit()
 
 #End of main Function

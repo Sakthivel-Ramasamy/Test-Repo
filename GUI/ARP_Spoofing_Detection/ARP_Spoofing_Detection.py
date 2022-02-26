@@ -90,9 +90,9 @@ if __name__=="__main__":
     file=open(os.path.dirname(__file__)+"/../input.json", "r")
     json_data=json.load(file)
     feature=json_data["Method"]
-    scan_interface=json_data["IP_Address"]
+    scan_interface=json_data["Interface"]
+    arpcount=0    
     if feature=="ARP Detection":
-        arpcount=0    
         output=open(os.path.dirname(__file__)+"/../output.hop", "a")
         output.truncate(0)
         arp_spoofing_detection_scanner_start_time=gettime()
